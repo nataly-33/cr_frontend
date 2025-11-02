@@ -5,8 +5,15 @@ export interface Patient {
   last_name: string;
   full_name: string;
   date_of_birth: string;
-  gender: string;
+  gender: "M" | "F";
   phone: string;
-  email: string;
+  email?: string;
+  address?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  blood_type?: string;
+  allergies?: string;
+  chronic_conditions?: string;
   created_at: string;
+  updated_at?: string;
 }
