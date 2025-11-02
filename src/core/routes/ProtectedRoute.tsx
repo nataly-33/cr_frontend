@@ -1,17 +1,18 @@
-import { Navigate, Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuthStore } from "@core/store/auth.store";
 import { MainLayout } from "@shared/components/layout/MainLayout";
 
-export const ProtectedRoute = () => {
+type ProtectedRouteProps = {
+  children?: ReactNode;
+};
+
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <MainLayout>
-      <Outlet />
-    </MainLayout>
-  );
+  return <MainLayout>{children}</MainLayout>;
 };
