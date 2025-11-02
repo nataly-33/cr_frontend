@@ -34,8 +34,13 @@ export interface ClinicalDocumentFormData {
   document_type: string;
   title: string;
   description?: string;
+  document_date?: string;
+  specialty?: string;
+  doctor_name?: string;
+  doctor_license?: string;
+  content?: string;
+  tags?: string[];
   file?: File;
-  status?: "draft" | "final" | "archived";
 }
 
 export interface DocumentUploadResponse {

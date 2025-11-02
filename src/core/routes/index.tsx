@@ -9,6 +9,11 @@ import {
   ClinicalRecordDetailPage,
   ClinicalRecordFormPage,
 } from "@modules/clinical-records/pages";
+import {
+  DocumentsListPage,
+  DocumentUploadPage,
+  DocumentViewerPage,
+} from "@modules/documents/pages";
 
 export const AppRoutes = () => {
   return (
@@ -36,6 +41,11 @@ export const AppRoutes = () => {
           path="/clinical-records/:id/edit"
           element={<ClinicalRecordFormPage />}
         />
+
+        {/* Documentos */}
+        <Route path="/documents" element={<DocumentsListPage />} />
+        <Route path="/documents/upload" element={<DocumentUploadPage />} />
+        <Route path="/documents/:id" element={<DocumentViewerPage />} />
       </Route>
 
       {/* Redirect por defecto */}

@@ -8,7 +8,6 @@ import {
   Trash2,
   CheckCircle,
   Edit,
-  Search,
   Filter,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
@@ -45,20 +44,20 @@ export const DocumentsListPage = () => {
 
   const deleteModal = useModal();
 
-  const { page, pageSize, search, setSearch, debouncedSearch, handlePageChange } =
+  const { currentPage, pageSize, searchQuery, handleSearch } =
     useTable();
 
   useEffect(() => {
     loadDocuments();
-  }, [page, pageSize, debouncedSearch, documentTypeFilter, statusFilter, signedFilter, clinicalRecordId]);
+  }, [currentPage, pageSize, searchQuery, documentTypeFilter, statusFilter, signedFilter, clinicalRecordId]);
 
   const loadDocuments = async () => {
     try {
       setLoading(true);
       const response = await documentsService.getAll({
-        page,
+        page: currentPage,
         page_size: pageSize,
-        search: debouncedSearch,
+        search: searchQuery,
         ordering: "-created_at",
         clinical_record: clinicalRecordId || undefined,
         document_type: documentTypeFilter || undefined,
@@ -129,7 +128,7 @@ export const DocumentsListPage = () => {
     setDocumentTypeFilter("");
     setStatusFilter("");
     setSignedFilter("");
-    setSearch("");
+    handleSearch("");
   };
 
   const columns = [
@@ -220,14 +219,18 @@ export const DocumentsListPage = () => {
             leftIcon={<Eye className="h-4 w-4" />}
             onClick={() => handleView(doc)}
             title="Ver documento"
-          />
+          >
+            {""}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
             leftIcon={<Download className="h-4 w-4" />}
             onClick={() => handleDownload(doc)}
             title="Descargar"
-          />
+          >
+            {""}
+          </Button>
           {!doc.is_signed && (
             <Button
               variant="ghost"
@@ -235,7 +238,9 @@ export const DocumentsListPage = () => {
               leftIcon={<CheckCircle className="h-4 w-4" />}
               onClick={() => handleSign(doc)}
               title="Firmar documento"
-            />
+            >
+              {""}
+            </Button>
           )}
           <Button
             variant="ghost"
@@ -243,7 +248,9 @@ export const DocumentsListPage = () => {
             leftIcon={<Edit className="h-4 w-4" />}
             onClick={() => navigate(`/documents/${doc.id}/edit`)}
             title="Editar"
-          />
+          >
+            {""}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -253,7 +260,9 @@ export const DocumentsListPage = () => {
               deleteModal.open();
             }}
             title="Eliminar"
-          />
+          >
+            {""}
+          </Button>
         </div>
       ),
     },
@@ -290,8 +299,8 @@ export const DocumentsListPage = () => {
         <div className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <SearchInput
-              value={search}
-              onChange={setSearch}
+              value={searchQuery}
+              onChange={handleSearch}
               placeholder="Buscar documentos..."
               className="md:col-span-2"
             />
@@ -334,7 +343,7 @@ export const DocumentsListPage = () => {
               <option value="false">Sin firmar</option>
             </select>
 
-            {(documentTypeFilter || statusFilter || signedFilter || search) && (
+            {(documentTypeFilter || statusFilter || signedFilter || searchQuery) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -367,9 +376,6 @@ export const DocumentsListPage = () => {
             <Table
               columns={columns}
               data={documents}
-              currentPage={page}
-              onPageChange={handlePageChange}
-              totalPages={Math.ceil(documents.length / pageSize)}
             />
           ) : (
             <div className="text-center py-12">

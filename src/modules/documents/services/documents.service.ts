@@ -77,18 +77,35 @@ export const documentsService = {
   ): Promise<DocumentUploadResponse> => {
     const formData = new FormData();
 
+    // Campos requeridos
     formData.append("clinical_record", data.clinical_record);
     formData.append("document_type", data.document_type);
     formData.append("title", data.title);
 
+    // Campos opcionales - solo agregar si tienen valor
     if (data.description) {
       formData.append("description", data.description);
     }
-
-    if (data.status) {
-      formData.append("status", data.status);
+    if (data.document_date) {
+      formData.append("document_date", data.document_date);
+    }
+    if (data.specialty) {
+      formData.append("specialty", data.specialty);
+    }
+    if (data.doctor_name) {
+      formData.append("doctor_name", data.doctor_name);
+    }
+    if (data.doctor_license) {
+      formData.append("doctor_license", data.doctor_license);
+    }
+    if (data.content) {
+      formData.append("content", data.content);
+    }
+    if (data.tags && data.tags.length > 0) {
+      formData.append("tags", JSON.stringify(data.tags));
     }
 
+    // Archivo (requerido para upload)
     if (data.file) {
       formData.append("file", data.file);
     }
