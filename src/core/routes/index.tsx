@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { LoginPage } from "@modules/auth/pages/LoginPage";
 import { DashboardPage } from "@modules/dashboard/pages/DashboardPage";
+import { AnalyticsDashboardPage } from "@modules/analytics/pages";
 import { PatientsListPage } from "@modules/patients/pages/PatientsListPage";
 import { PatientFormPage } from "@modules/patients/pages/PatientFormPage";
 import { PatientDetailPage } from "@modules/patients/pages/PatientDetailPage";
@@ -29,6 +30,13 @@ import {
   TriageFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
+import {
+  ProfilePage,
+  PreferencesPage,
+  SecurityPage,
+} from "@modules/settings/pages";
+import { NotificationPreferencesPage } from "@modules/notifications/pages/NotificationPreferencesPage";
+import { AdminPage } from "@modules/admin/pages";
 
 export const AppRoutes = () => {
   return (
@@ -39,6 +47,7 @@ export const AppRoutes = () => {
       {/* Rutas protegidas */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsDashboardPage />} />
 
         {/* Pacientes */}
         <Route path="/patients" element={<PatientsListPage />} />
@@ -83,6 +92,13 @@ export const AppRoutes = () => {
 
         {/* Configuración */}
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings/profile" element={<ProfilePage />} />
+        <Route path="/settings/preferences" element={<PreferencesPage />} />
+        <Route path="/settings/security" element={<SecurityPage />} />
+        <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
+
+        {/* Administración */}
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
 
       {/* Redirect por defecto */}

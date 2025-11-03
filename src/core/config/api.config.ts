@@ -8,9 +8,9 @@ export const API_CONFIG = {
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login/",
-    LOGOUT: "/auth/logout/",
-    REFRESH: "/auth/refresh/",
+    LOGIN: "/login/",
+    LOGOUT: "/logout/",
+    REFRESH: "/refresh/",
     ME: "/users/me/",
   },
   PATIENTS: {
@@ -18,10 +18,19 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `/patients/${id}/`,
     CREATE: "/patients/",
   },
+  CLINICAL_RECORDS: {
+    LIST: "/clinical-records/",
+    DETAIL: (id: string) => `/clinical-records/${id}/`,
+    CREATE: "/clinical-records/",
+  },
   DOCUMENTS: {
     LIST: "/documents/",
     DETAIL: (id: string) => `/documents/${id}/`,
     UPLOAD: "/documents/upload/",
+  },
+  AUDIT: {
+    LIST: "/audit/",
+    DETAIL: (id: string) => `/audit/${id}/`,
   },
   REPORTS: {
     GENERATE: "/reports/generator/generate/",
