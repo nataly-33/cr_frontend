@@ -3,6 +3,8 @@ export type { ButtonVariant, ButtonSize } from "./Button";
 
 export { Input } from "./Input";
 
+export { Select } from "./Select";
+
 export { Loading, Spinner } from "./Loading";
 
 export { Modal, ConfirmModal } from "./Modal";

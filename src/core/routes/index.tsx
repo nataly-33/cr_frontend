@@ -14,6 +14,19 @@ import {
   DocumentUploadPage,
   DocumentViewerPage,
 } from "@modules/documents/pages";
+import {
+  UsersListPage,
+  UserFormPage,
+} from "@modules/users/pages";
+import {
+  ReportsPage,
+  ReportViewerPage,
+} from "@modules/reports/pages";
+import {
+  ProfilePage,
+  PreferencesPage,
+  SecurityPage,
+} from "@modules/settings/pages";
 
 export const AppRoutes = () => {
   return (
@@ -46,6 +59,20 @@ export const AppRoutes = () => {
         <Route path="/documents" element={<DocumentsListPage />} />
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
         <Route path="/documents/:id" element={<DocumentViewerPage />} />
+
+        {/* Usuarios */}
+        <Route path="/users" element={<UsersListPage />} />
+        <Route path="/users/new" element={<UserFormPage />} />
+        <Route path="/users/:id/edit" element={<UserFormPage />} />
+
+        {/* Reportes */}
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports/:id" element={<ReportViewerPage />} />
+
+        {/* Configuración */}
+        <Route path="/settings/profile" element={<ProfilePage />} />
+        <Route path="/settings/preferences" element={<PreferencesPage />} />
+        <Route path="/settings/security" element={<SecurityPage />} />
       </Route>
 
       {/* Redirect por defecto */}
