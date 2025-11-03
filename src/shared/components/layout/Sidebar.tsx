@@ -1,6 +1,7 @@
 import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { NotificationCenter } from "@/modules/notifications";
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -47,6 +48,18 @@ export const Sidebar = () => {
               );
             })}
           </nav>
+        </div>
+
+        {/* Notification Center in Sidebar Footer */}
+        <div className="flex-shrink-0 border-t p-4" style={{
+          borderColor: 'rgb(var(--border-color))'
+        }}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              Notificaciones
+            </span>
+            <NotificationCenter />
+          </div>
         </div>
       </div>
     </div>
