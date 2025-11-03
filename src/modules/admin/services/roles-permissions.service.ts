@@ -17,14 +17,14 @@ export interface Role {
   tenant_id: string | null;
   name: string;
   description: string;
-  permissions: string[]; // IDs de permisos
+  permissions: string[] | Permission[]; // IDs de permisos o permisos completos
   is_system_role: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface RoleDetail extends Role {
-  permissions: Permission[];
+  permissions: Permission[]; // Permisos completos (detalle)
 }
 
 export interface CreateRoleData {

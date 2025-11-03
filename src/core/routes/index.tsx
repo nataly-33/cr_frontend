@@ -30,11 +30,6 @@ import {
   TriageFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
-import {
-  ProfilePage,
-  PreferencesPage,
-  SecurityPage,
-} from "@modules/settings/pages";
 import { NotificationPreferencesPage } from "@modules/notifications/pages/NotificationPreferencesPage";
 import { AdminPage } from "@modules/admin/pages";
 
@@ -92,9 +87,6 @@ export const AppRoutes = () => {
 
         {/* Configuración */}
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/settings/profile" element={<ProfilePage />} />
-        <Route path="/settings/preferences" element={<PreferencesPage />} />
-        <Route path="/settings/security" element={<SecurityPage />} />
         <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
 
         {/* Administración */}
