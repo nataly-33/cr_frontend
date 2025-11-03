@@ -2,7 +2,7 @@ import { apiService } from '../../../shared/services/api.service';
 import type { UserPreferences } from '../../../core/store/settings.store';
 
 class SettingsService {
-  private readonly baseUrl = '/auth/users/preferences/';
+  private readonly baseUrl = '/users/preferences/';
 
   async getPreferences(): Promise<UserPreferences> {
     const response = await apiService.get<UserPreferences>(this.baseUrl);
