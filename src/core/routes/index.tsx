@@ -22,11 +22,7 @@ import {
   ReportsPage,
   ReportViewerPage,
 } from "@modules/reports/pages";
-import {
-  ProfilePage,
-  PreferencesPage,
-  SecurityPage,
-} from "@modules/settings/pages";
+import { SettingsPage } from "@modules/settings/pages";
 
 export const AppRoutes = () => {
   return (
@@ -70,9 +66,7 @@ export const AppRoutes = () => {
         <Route path="/reports/:id" element={<ReportViewerPage />} />
 
         {/* Configuración */}
-        <Route path="/settings/profile" element={<ProfilePage />} />
-        <Route path="/settings/preferences" element={<PreferencesPage />} />
-        <Route path="/settings/security" element={<SecurityPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* Redirect por defecto */}
