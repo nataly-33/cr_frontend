@@ -57,12 +57,15 @@ export const UsersListPage = () => {
         ordering: params.ordering,
       });
 
-      setUsers(data.results);
-      setTotalItems(data.count);
-      setTotalPages(Math.ceil(data.count / pageSize));
+      setUsers(data.results || []);
+      setTotalItems(data.count || 0);
+      setTotalPages(Math.ceil((data.count || 0) / pageSize));
     } catch (error) {
       console.error("Error loading users:", error);
       showToast.error("Error al cargar usuarios");
+      setUsers([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }

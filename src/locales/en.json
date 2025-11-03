@@ -16,6 +16,7 @@
     "documents": "Documents",
     "reports": "Reports",
     "users": "Users",
+    "roles": "Roles & Permissions",
     "settings": "Settings",
     "logout": "Logout"
   },

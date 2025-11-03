@@ -52,9 +52,10 @@ export const PatientDetailPage = () => {
     try {
       setLoadingRecords(true);
       const response = await clinicalRecordsService.getAll({ patient: patientId });
-      setClinicalRecords(response.results);
+      setClinicalRecords(response.results || []);
     } catch (error) {
       console.error("Error loading clinical records:", error);
+      setClinicalRecords([]);
     } finally {
       setLoadingRecords(false);
     }
@@ -267,7 +268,7 @@ export const PatientDetailPage = () => {
       <Card>
         <CardHeader
           title="Historias Clínicas"
-          subtitle={`${clinicalRecords.length} historia(s) clínica(s)`}
+          subtitle={`${clinicalRecords?.length || 0} historia(s) clínica(s)`}
           actions={
             <Button
               leftIcon={<Plus className="h-4 w-4" />}

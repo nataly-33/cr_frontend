@@ -54,12 +54,15 @@ export const PatientsListPage = () => {
         ordering: params.ordering,
       });
 
-      setPatients(data.results);
-      setTotalItems(data.count);
-      setTotalPages(Math.ceil(data.count / pageSize));
+      setPatients(data.results || []);
+      setTotalItems(data.count || 0);
+      setTotalPages(Math.ceil((data.count || 0) / pageSize));
     } catch (error) {
       console.error("Error loading patients:", error);
       showToast.error("Error al cargar pacientes");
+      setPatients([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
