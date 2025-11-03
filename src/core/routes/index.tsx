@@ -17,16 +17,18 @@ import {
 import {
   UsersListPage,
   UserFormPage,
+  RolesListPage,
+  RoleFormPage,
 } from "@modules/users/pages";
 import {
   ReportsPage,
   ReportViewerPage,
 } from "@modules/reports/pages";
 import {
-  ProfilePage,
-  PreferencesPage,
-  SecurityPage,
-} from "@modules/settings/pages";
+  ClinicalFormsListPage,
+  TriageFormPage,
+} from "@modules/clinical-forms/pages";
+import { SettingsPage } from "@modules/settings/pages";
 
 export const AppRoutes = () => {
   return (
@@ -60,19 +62,27 @@ export const AppRoutes = () => {
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
         <Route path="/documents/:id" element={<DocumentViewerPage />} />
 
+        {/* Formularios Clínicos */}
+        <Route path="/clinical-forms" element={<ClinicalFormsListPage />} />
+        <Route path="/clinical-forms/triage/new" element={<TriageFormPage />} />
+        <Route path="/clinical-forms/triage/:id/edit" element={<TriageFormPage />} />
+
         {/* Usuarios */}
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/users/new" element={<UserFormPage />} />
         <Route path="/users/:id/edit" element={<UserFormPage />} />
+
+        {/* Roles */}
+        <Route path="/roles" element={<RolesListPage />} />
+        <Route path="/roles/new" element={<RoleFormPage />} />
+        <Route path="/roles/:id/edit" element={<RoleFormPage />} />
 
         {/* Reportes */}
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/reports/:id" element={<ReportViewerPage />} />
 
         {/* Configuración */}
-        <Route path="/settings/profile" element={<ProfilePage />} />
-        <Route path="/settings/preferences" element={<PreferencesPage />} />
-        <Route path="/settings/security" element={<SecurityPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* Redirect por defecto */}

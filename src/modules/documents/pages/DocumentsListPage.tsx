@@ -64,10 +64,11 @@ export const DocumentsListPage = () => {
         status: statusFilter || undefined,
         is_signed: signedFilter === "true" ? true : signedFilter === "false" ? false : undefined,
       });
-      setDocuments(response.results);
+      setDocuments(response.results || []);
     } catch (error) {
       console.error("Error loading documents:", error);
       showToast.error("Error al cargar los documentos");
+      setDocuments([]);
     } finally {
       setLoading(false);
     }

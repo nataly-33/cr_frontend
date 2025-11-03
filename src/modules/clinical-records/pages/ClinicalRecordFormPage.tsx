@@ -107,9 +107,10 @@ export const ClinicalRecordFormPage = () => {
     try {
       setLoadingPatients(true);
       const response = await patientsService.getAll({ page_size: 1000 });
-      setPatients(response.results);
+      setPatients(response.results || []);
     } catch (error) {
       showToast.error("Error al cargar pacientes");
+      setPatients([]);
     } finally {
       setLoadingPatients(false);
     }

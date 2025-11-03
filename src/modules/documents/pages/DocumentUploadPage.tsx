@@ -117,9 +117,10 @@ export const DocumentUploadPage = () => {
         page_size: 1000,
         status: "active",
       });
-      setClinicalRecords(response.results);
+      setClinicalRecords(response.results || []);
     } catch (error) {
       showToast.error("Error al cargar historias clínicas");
+      setClinicalRecords([]);
     } finally {
       setLoadingRecords(false);
     }

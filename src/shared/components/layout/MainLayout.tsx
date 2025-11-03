@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
+    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
       <Sidebar />
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <Navbar />

@@ -86,12 +86,15 @@ export const ReportsPage = () => {
         ordering: "-created_at",
       });
 
-      setExecutions(data.results);
-      setTotalItems(data.count);
-      setTotalPages(Math.ceil(data.count / pageSize));
+      setExecutions(data.results || []);
+      setTotalItems(data.count || 0);
+      setTotalPages(Math.ceil((data.count || 0) / pageSize));
     } catch (error) {
       console.error("Error loading executions:", error);
       showToast.error("Error al cargar historial de reportes");
+      setExecutions([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setLoadingHistory(false);
     }

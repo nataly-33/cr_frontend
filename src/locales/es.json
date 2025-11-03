@@ -1,0 +1,68 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito"
+  },
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "patients": "Pacientes",
+    "clinical_records": "Historias Clínicas",
+    "documents": "Documentos",
+    "reports": "Reportes",
+    "users": "Usuarios",
+    "roles": "Roles y Permisos",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión"
+  },
+  "settings": {
+    "title": "Configuración del Sistema",
+    "subtitle": "Personaliza la apariencia y comportamiento de la aplicación",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "theme": "Tema",
+    "fontSize": "Tamaño de Fuente",
+    "fontFamily": "Tipografía",
+    "notifications": "Notificaciones",
+    "emailNotifications": "Notificaciones por Email",
+    "pushNotifications": "Notificaciones Push",
+    "saveChanges": "Guardar Cambios",
+    "changesSaved": "Cambios guardados exitosamente",
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "blue": "Azul",
+      "green": "Verde",
+      "purple": "Púrpura"
+    },
+    "fontSizes": {
+      "small": "Pequeño",
+      "medium": "Mediano",
+      "large": "Grande",
+      "extra-large": "Extra Grande"
+    },
+    "fontFamilies": {
+      "inter": "Inter",
+      "roboto": "Roboto",
+      "open-sans": "Open Sans",
+      "lato": "Lato",
+      "montserrat": "Montserrat"
+    },
+    "languages": {
+      "es": "Español",
+      "en": "Inglés"
+    }
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "register": "Registrarse"
+  }
+}
