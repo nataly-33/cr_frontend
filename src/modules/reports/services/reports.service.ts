@@ -1,8 +1,13 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   ReportTemplate,
   ReportExecution,
   GenerateReportData,
+  AIInsightsResponse,
+  AIAnalysisResult,
+  AISummary,
+  AIRecommendation,
 } from "../types";
 import type { PaginatedResponse } from "@core/types";
 
@@ -111,7 +116,7 @@ export const reportsService = {
    */
   generate: async (data: GenerateReportData): Promise<ReportExecution> => {
     const response = await apiService.post<ReportExecution>(
-      "/reports/generate/",
+      ENDPOINTS.REPORTS.GENERATE,
       data
     );
     return response.data;
@@ -122,7 +127,7 @@ export const reportsService = {
    */
   download: async (id: string): Promise<Blob> => {
     const response = await apiService.get<Blob>(
-      `/reports/executions/${id}/download/`,
+      ENDPOINTS.REPORTS.DOWNLOAD(id),
       {
         responseType: "blob",
       }
@@ -181,5 +186,66 @@ export const reportsService = {
       recent_executions: ReportExecution[];
     }>("/reports/statistics/");
     return response.data;
+  },
+
+  // ====== AI/IA Analysis Methods ======
+
+  /**
+   * Analyze report data with AI
+   */
+  analyzeWithAI: async (reportId: string): Promise<AIAnalysisResult> => {
+    const response = await apiService.post<AIAnalysisResult>(
+      `/reports/executions/${reportId}/analyze/`
+    );
+    return response.data;
+  },
+
+  /**
+   * Generate AI summary for report
+   */
+  generateSummary: async (reportId: string, maxLength?: number): Promise<AISummary> => {
+    const params = maxLength ? `?max_length=${maxLength}` : "";
+    const response = await apiService.post<AISummary>(
+      `/reports/executions/${reportId}/summarize/${params}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Get AI recommendations based on report
+   */
+  getRecommendations: async (reportId: string): Promise<AIRecommendation[]> => {
+    const response = await apiService.get<AIRecommendation[]>(
+      `/reports/executions/${reportId}/recommendations/`
+    );
+    return response.data;
+  },
+
+  /**
+   * Get all AI insights for a report (analysis + summary + recommendations)
+   */
+  getAIInsights: async (reportId: string): Promise<AIInsightsResponse> => {
+    const response = await apiService.get<AIInsightsResponse>(
+      `/reports/executions/${reportId}/ai-insights/`
+    );
+    return response.data;
+  },
+
+  /**
+   * Get AI insights with caching - checks if already analyzed
+   */
+  getOrAnalyzeReport: async (reportId: string): Promise<AIInsightsResponse> => {
+    try {
+      // First try to get cached insights
+      return await reportsService.getAIInsights(reportId);
+    } catch (error) {
+      // If not available, trigger analysis
+      await reportsService.analyzeWithAI(reportId);
+      // Return pending response
+      return {
+        status: "pending",
+        message: "Analysis started, please check back in a moment",
+      };
+    }
   },
 };

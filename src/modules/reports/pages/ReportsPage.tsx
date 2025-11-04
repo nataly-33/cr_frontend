@@ -3,8 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FileText, Download, Eye, Clock, CheckCircle, XCircle } from "lucide-react";
+import { 
+  FileText, 
+  Download, 
+  Eye, 
+  Clock, 
+  CheckCircle, 
+  XCircle,
+  Zap,
+  BarChart3
+} from "lucide-react";
 import { reportsService } from "../services/reports.service";
+import { AIActionsMenu } from "../components/AIActionsMenu";
 import type { ReportExecution } from "../types";
 import { REPORT_TYPES, OUTPUT_FORMATS } from "../types";
 import {
@@ -29,6 +39,47 @@ const reportFormSchema = z.object({
 
 type ReportFormData = z.infer<typeof reportFormSchema>;
 
+// Statistics Card Component
+const StatCard = ({ 
+  icon: Icon, 
+  label, 
+  value, 
+  variant = "default" 
+}: { 
+  icon: any; 
+  label: string; 
+  value: string | number; 
+  variant?: "default" | "success" | "warning" | "error" 
+}) => {
+  const bgColors = {
+    default: "bg-blue-50",
+    success: "bg-green-50",
+    warning: "bg-yellow-50",
+    error: "bg-red-50",
+  };
+
+  const textColors = {
+    default: "text-blue-600",
+    success: "text-green-600",
+    warning: "text-yellow-600",
+    error: "text-red-600",
+  };
+
+  return (
+    <div className={`rounded-lg p-6 border border-gray-200 ${bgColors[variant]}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+        </div>
+        <div className={`p-3 rounded-lg bg-white`}>
+          <Icon className={`h-8 w-8 ${textColors[variant]}`} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ReportsPage = () => {
   const navigate = useNavigate();
   const [executions, setExecutions] = useState<ReportExecution[]>([]);
@@ -49,6 +100,7 @@ export const ReportsPage = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ReportFormData>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: {
@@ -100,6 +152,14 @@ export const ReportsPage = () => {
     }
   };
 
+  // Calculate statistics
+  const stats = {
+    total: totalItems,
+    completed: executions.filter((e) => e.status === "completed").length,
+    processing: executions.filter((e) => e.status === "processing" || e.status === "pending").length,
+    failed: executions.filter((e) => e.status === "failed").length,
+  };
+
   const onSubmit = async (data: ReportFormData) => {
     try {
       setGenerating(true);
@@ -119,10 +179,13 @@ export const ReportsPage = () => {
       }
 
       await reportsService.generate(generateData);
-      showToast.success("Reporte generándose. Aparecerá en el historial cuando esté listo.");
+      showToast.success("✨ Reporte en cola. Se procesará en segundos.");
+      
+      // Reset form
+      reset({ report_type: "", output_format: "pdf" });
       
       // Reload executions to show the new report
-      loadExecutions();
+      setTimeout(loadExecutions, 1000);
     } catch (error: any) {
       console.error("Error generating report:", error);
       const errorMessage =
@@ -216,18 +279,19 @@ export const ReportsPage = () => {
             <>
               <button
                 onClick={() => navigate(`/reports/${execution.id}`)}
-                className="text-blue-600 hover:text-blue-900"
+                className="text-blue-600 hover:text-blue-900 transition-colors"
                 title="Ver detalles"
               >
                 <Eye className="h-4 w-4" />
               </button>
               <button
                 onClick={() => handleDownload(execution)}
-                className="text-green-600 hover:text-green-900"
+                className="text-green-600 hover:text-green-900 transition-colors"
                 title="Descargar"
               >
                 <Download className="h-4 w-4" />
               </button>
+              <AIActionsMenu execution={execution} />
             </>
           )}
         </div>
@@ -237,102 +301,184 @@ export const ReportsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Generate Report Form */}
-      <Card>
-        <div className="p-6">
-          <CardHeader
-            title="Generar Reporte"
-            subtitle="Selecciona el tipo de reporte y formato de salida"
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <BarChart3 className="h-8 w-8 text-blue-600" />
+            Reportes
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Genera y gestiona reportes de tu clínica con análisis de IA integrado
+          </p>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      {totalItems > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <StatCard
+            icon={FileText}
+            label="Total de Reportes"
+            value={stats.total}
+            variant="default"
           />
+          <StatCard
+            icon={CheckCircle}
+            label="Completados"
+            value={stats.completed}
+            variant="success"
+          />
+          <StatCard
+            icon={Clock}
+            label="Procesando"
+            value={stats.processing}
+            variant="warning"
+          />
+          <StatCard
+            icon={XCircle}
+            label="Fallidos"
+            value={stats.failed}
+            variant="error"
+          />
+        </div>
+      )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Tipo de Reporte *"
-                {...register("report_type")}
-                error={errors.report_type?.message}
-              >
-                <option value="">Seleccione un tipo</option>
-                {Object.entries(REPORT_TYPES).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                label="Formato de Salida *"
-                {...register("output_format")}
-                error={errors.output_format?.message}
-              >
-                <option value="">Seleccione un formato</option>
-                {Object.entries(OUTPUT_FORMATS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-
-              <Input
-                label="Fecha de Inicio"
-                type="date"
-                {...register("start_date")}
-                error={errors.start_date?.message}
+      {/* Generate Report Form */}
+      <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-blue-25">
+        <div className="p-6 lg:p-8">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-blue-100">
+              <Zap className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <CardHeader
+                title="Generar Nuevo Reporte"
+                subtitle="Selecciona el tipo, formato y rango de fechas para tu reporte"
               />
 
-              <Input
-                label="Fecha de Fin"
-                type="date"
-                {...register("end_date")}
-                error={errors.end_date?.message}
-              />
-            </div>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-1">
+                    <Select
+                      label="Tipo de Reporte *"
+                      {...register("report_type")}
+                      error={errors.report_type?.message}
+                    >
+                      <option value="">Seleccione...</option>
+                      {Object.entries(REPORT_TYPES).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
 
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                leftIcon={<FileText className="h-4 w-4" />}
-                disabled={generating}
-                isLoading={generating}
-              >
-                Generar Reporte
-              </Button>
+                  <div className="lg:col-span-1">
+                    <Select
+                      label="Formato *"
+                      {...register("output_format")}
+                      error={errors.output_format?.message}
+                    >
+                      <option value="">Seleccione...</option>
+                      {Object.entries(OUTPUT_FORMATS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+
+                  <Input
+                    label="Fecha Inicio"
+                    type="date"
+                    {...register("start_date")}
+                    error={errors.start_date?.message}
+                  />
+
+                  <Input
+                    label="Fecha Fin"
+                    type="date"
+                    {...register("end_date")}
+                    error={errors.end_date?.message}
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    leftIcon={<FileText className="h-4 w-4" />}
+                    disabled={generating}
+                    isLoading={generating}
+                    className="px-6"
+                  >
+                    {generating ? "Generando..." : "Generar Reporte"}
+                  </Button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
       </Card>
 
       {/* Report History */}
       <Card>
-        <div className="p-6">
-          <CardHeader
-            title="Historial de Reportes"
-            subtitle="Reportes generados recientemente"
-          />
-
-          <div className="mt-6">
-            <Table
-              columns={columns}
-              data={executions}
-              isLoading={loadingHistory}
-              emptyMessage="No se encontraron reportes"
-            />
-
-            {totalPages > 1 && (
-              <div className="mt-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
-                  totalItems={totalItems}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                />
+        <div className="p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <CardHeader
+                title="Historial de Reportes"
+                subtitle={`${totalItems} reportes en total`}
+              />
+            </div>
+            {loadingHistory && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                Actualizando...
               </div>
             )}
           </div>
+
+          {executions.length > 0 ? (
+            <>
+              <Table
+                columns={columns}
+                data={executions}
+                isLoading={loadingHistory}
+                emptyMessage="No se encontraron reportes"
+              />
+
+              {totalPages > 1 && (
+                <div className="mt-6 border-t pt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    pageSize={pageSize}
+                    totalItems={totalItems}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="py-12 text-center">
+              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No hay reportes aún</p>
+              <p className="text-gray-400 text-sm mt-2">
+                Genera tu primer reporte usando el formulario de arriba
+              </p>
+            </div>
+          )}
         </div>
       </Card>
+
+      {/* Quick Tips */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+        <p className="text-sm text-green-800">
+          <strong>💡 Consejo:</strong> Los reportes se procesan en segundo plano. Puedes navegar a otras secciones mientras esperas. Los reportes completados estarán disponibles para descargar y analizar con IA.
+        </p>
+      </div>
     </div>
   );
 };

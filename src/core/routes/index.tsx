@@ -29,6 +29,7 @@ import {
   TriageFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
+import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modules/notifications";
 
 export const AppRoutes = () => {
   return (
@@ -83,6 +84,11 @@ export const AppRoutes = () => {
 
         {/* Configuración */}
         <Route path="/settings" element={<SettingsPage />} />
+
+        {/* Notificaciones */}
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/preferences" element={<PreferencesPage />} />
+        <Route path="/notifications/send" element={<SendNotificationPage />} />
       </Route>
 
       {/* Redirect por defecto */}

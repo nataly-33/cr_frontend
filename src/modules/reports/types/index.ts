@@ -75,3 +75,39 @@ export const REPORT_STATUS = {
   completed: "Completado",
   failed: "Fallido",
 } as const;
+
+// ====== AI/IA Types ======
+
+export interface AIAnalysisResult {
+  id: string;
+  report_id: string;
+  analysis: string;
+  insights: string[];
+  key_findings: string[];
+  confidence_score: number;
+  generated_at: string;
+}
+
+export interface AIRecommendation {
+  id: string;
+  recommendation: string;
+  priority: "high" | "medium" | "low";
+  category: string;
+  action_items?: string[];
+}
+
+export interface AISummary {
+  id: string;
+  summary: string;
+  key_points: string[];
+  length: number;
+  generated_at: string;
+}
+
+export interface AIInsightsResponse {
+  analysis?: AIAnalysisResult;
+  summary?: AISummary;
+  recommendations?: AIRecommendation[];
+  status: "success" | "error" | "pending";
+  message?: string;
+}
