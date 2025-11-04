@@ -1,0 +1,68 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "clinical_records": "Clinical Records",
+    "documents": "Documents",
+    "reports": "Reports",
+    "users": "Users",
+    "roles": "Roles & Permissions",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "settings": {
+    "title": "System Settings",
+    "subtitle": "Customize the application appearance and behavior",
+    "appearance": "Appearance",
+    "language": "Language",
+    "theme": "Theme",
+    "fontSize": "Font Size",
+    "fontFamily": "Typography",
+    "notifications": "Notifications",
+    "emailNotifications": "Email Notifications",
+    "pushNotifications": "Push Notifications",
+    "saveChanges": "Save Changes",
+    "changesSaved": "Changes saved successfully",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "blue": "Blue",
+      "green": "Green",
+      "purple": "Purple"
+    },
+    "fontSizes": {
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "extra-large": "Extra Large"
+    },
+    "fontFamilies": {
+      "inter": "Inter",
+      "roboto": "Roboto",
+      "open-sans": "Open Sans",
+      "lato": "Lato",
+      "montserrat": "Montserrat"
+    },
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "register": "Register"
+  }
+}

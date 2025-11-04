@@ -1,23 +1,49 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 
+// Public
+import { LandingPage } from "@modules/public/pages/LandingPage";
+import { RegisterPage } from "@modules/public/pages/RegisterPage";
+import { ActivationPage } from "@modules/public/pages/ActivationPage";
+import { RegistrationSuccessPage } from "@modules/public/pages/RegistrationSuccessPage";
+
 // Auth
-import { LoginPage } from "@/modules/auth/pages/LoginPage";
+import { LoginPage } from "@modules/auth/pages/LoginPage";
 
-// Public (nuevas)
-import { LandingPage } from "@/modules/public/pages/LandingPage";
-import { RegisterPage } from "@/modules/public/pages/RegisterPage";
-import { ActivationPage } from "@/modules/public/pages/ActivationPage";
-import { RegistrationSuccessPage } from "@/modules/public/pages/RegistrationSuccessPage";
-
-// Protected
-import { DashboardPage } from "@/modules/dashboard/pages/DashboardPage";
-import { PatientsListPage } from "@/modules/patients/pages/PatientsListPage";
+// Protected / App
+import { DashboardPage } from "@modules/dashboard/pages/DashboardPage";
+import { AnalyticsDashboardPage } from "@modules/analytics/pages";
+import { PatientsListPage } from "@modules/patients/pages/PatientsListPage";
+import { PatientFormPage } from "@modules/patients/pages/PatientFormPage";
+import { PatientDetailPage } from "@modules/patients/pages/PatientDetailPage";
+import {
+  ClinicalRecordDetailPage,
+  ClinicalRecordFormPage,
+} from "@modules/clinical-records/pages";
+import {
+  DocumentsListPage,
+  DocumentUploadPage,
+  DocumentViewerPage,
+} from "@modules/documents/pages";
+import {
+  UsersListPage,
+  UserFormPage,
+  RolesListPage,
+  RoleFormPage,
+} from "@modules/users/pages";
+import { ReportsPage, ReportViewerPage } from "@modules/reports/pages";
+import {
+  ClinicalFormsListPage,
+  TriageFormPage,
+} from "@modules/clinical-forms/pages";
+import { SettingsPage } from "@modules/settings/pages";
+import { NotificationPreferencesPage } from "@modules/notifications/pages/NotificationPreferencesPage";
+import { AdminPage } from "@modules/admin/pages";
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Rutas Públicas */}
+      {/* Public routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/activate" element={<ActivationPage />} />
@@ -27,25 +53,70 @@ export const AppRoutes = () => {
       />
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Rutas Protegidas */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/patients"
-        element={
-          <ProtectedRoute>
-            <PatientsListPage />
-          </ProtectedRoute>
-        }
-      />
+      {/* Protected routes (nested approach - active) */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsDashboardPage />} />
 
-      {/* Redirect */}
+        {/* Patients */}
+        <Route path="/patients" element={<PatientsListPage />} />
+        <Route path="/patients/new" element={<PatientFormPage />} />
+        <Route path="/patients/:id" element={<PatientDetailPage />} />
+        <Route path="/patients/:id/edit" element={<PatientFormPage />} />
+
+        {/* Clinical records */}
+        <Route
+          path="/clinical-records/new"
+          element={<ClinicalRecordFormPage />}
+        />
+        <Route
+          path="/clinical-records/:id"
+          element={<ClinicalRecordDetailPage />}
+        />
+        <Route
+          path="/clinical-records/:id/edit"
+          element={<ClinicalRecordFormPage />}
+        />
+
+        {/* Documents */}
+        <Route path="/documents" element={<DocumentsListPage />} />
+        <Route path="/documents/upload" element={<DocumentUploadPage />} />
+        <Route path="/documents/:id" element={<DocumentViewerPage />} />
+
+        {/* Clinical forms */}
+        <Route path="/clinical-forms" element={<ClinicalFormsListPage />} />
+        <Route path="/clinical-forms/triage/new" element={<TriageFormPage />} />
+        <Route
+          path="/clinical-forms/triage/:id/edit"
+          element={<TriageFormPage />}
+        />
+
+        {/* Users */}
+        <Route path="/users" element={<UsersListPage />} />
+        <Route path="/users/new" element={<UserFormPage />} />
+        <Route path="/users/:id/edit" element={<UserFormPage />} />
+
+        {/* Roles */}
+        <Route path="/roles" element={<RolesListPage />} />
+        <Route path="/roles/new" element={<RoleFormPage />} />
+        <Route path="/roles/:id/edit" element={<RoleFormPage />} />
+
+        {/* Reports */}
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports/:id" element={<ReportViewerPage />} />
+
+        {/* Settings */}
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/settings/notifications"
+          element={<NotificationPreferencesPage />}
+        />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminPage />} />
+      </Route>
+
+      {/* Redirect for unknown routes */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
