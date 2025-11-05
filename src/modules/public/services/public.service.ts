@@ -7,11 +7,11 @@ import type {
   TenantActivationResponse,
 } from "../types/index";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // Instancia de axios SIN autenticación para APIs públicas
 const publicApi = axios.create({
-  baseURL: `${API_URL}/api/tenants/public`,
+  baseURL: `${API_URL}/tenants/public`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,8 +20,9 @@ const publicApi = axios.create({
 export const publicApiService = {
   // Obtener planes disponibles
   async getPlans(): Promise<SubscriptionPlan[]> {
-    const response = await publicApi.get<SubscriptionPlan[]>("/plans/");
-    return response.data;
+    const response = await publicApi.get<{ results: SubscriptionPlan[] }>("/plans/");
+    // Django REST Framework devuelve {results: [...]} cuando usa paginación
+    return response.data.results || response.data;
   },
 
   // Registrar nuevo tenant

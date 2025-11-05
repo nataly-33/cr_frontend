@@ -27,6 +27,8 @@ export const RegisterPage: React.FC = () => {
     null
   );
 
+  const SUBDOMAIN_REGEX = /^[a-z0-9-]{3,}$/;
+
   // Debounce para check de subdomain
   useEffect(() => {
     if (formData.subdomain.length >= 3) {
@@ -67,6 +69,13 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!SUBDOMAIN_REGEX.test(formData.subdomain)) {
+      setError(
+        "Subdominio inválido. Solo letras minúsculas, números y guiones. Mínimo 3 caracteres."
+      );
+      return;
+    }
 
     if (!subdomainAvailable) {
       setError("El subdominio no está disponible");
@@ -109,7 +118,7 @@ export const RegisterPage: React.FC = () => {
         <div className="text-center mb-8">
           <Link
             to="/"
-            className="text-blue-600 hover:text-blue-700 font-semibold"
+            className="text-green-600 hover:text-green-700 font-semibold"
           >
             ← Volver al inicio
           </Link>
@@ -145,7 +154,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={formData.tenant_name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Ej: Clínica La Paz"
                   />
                 </div>
@@ -161,7 +170,7 @@ export const RegisterPage: React.FC = () => {
                       required
                       value={formData.subdomain}
                       onChange={handleChange}
-                      className={`flex-1 px-4 py-2 border rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`flex-1 px-4 py-2 border rounded-l-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
                         subdomainAvailable === false
                           ? "border-red-500"
                           : subdomainAvailable === true
@@ -169,11 +178,10 @@ export const RegisterPage: React.FC = () => {
                           : "border-gray-300"
                       }`}
                       placeholder="lapaz"
-                      pattern="[a-z0-9-]{3,}"
                       minLength={3}
                     />
                     <span className="px-4 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg text-gray-600">
-                      .medirecord.com
+                      .com
                     </span>
                   </div>
                   {subdomainChecking && (
@@ -214,7 +222,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={formData.admin_first_name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Juan"
                   />
                 </div>
@@ -228,7 +236,7 @@ export const RegisterPage: React.FC = () => {
                     required
                     value={formData.admin_last_name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Pérez"
                   />
                 </div>
@@ -244,7 +252,7 @@ export const RegisterPage: React.FC = () => {
                   required
                   value={formData.admin_email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="tu.email@gmail.com"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -262,7 +270,7 @@ export const RegisterPage: React.FC = () => {
                   name="admin_phone"
                   value={formData.admin_phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="+591 77123456"
                 />
               </div>
@@ -273,7 +281,7 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading || !subdomainAvailable}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -318,7 +326,7 @@ export const RegisterPage: React.FC = () => {
             ¿Ya tienes una cuenta?{" "}
             <Link
               to="/login"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
+              className="text-green-600 hover:text-green-700 font-semibold"
             >
               Iniciar Sesión
             </Link>

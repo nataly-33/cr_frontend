@@ -35,9 +35,9 @@ export const RegistrationSuccessPage: React.FC = () => {
           instrucciones para activar tu cuenta de <strong>{tenantName}</strong>.
         </p>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-          <h3 className="font-semibold text-blue-900 mb-2">Próximos pasos:</h3>
-          <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-left">
+          <h3 className="font-semibold text-green-900 mb-2">Próximos pasos:</h3>
+          <ol className="text-sm text-green-800 space-y-2 list-decimal list-inside">
             <li>Revisa tu bandeja de entrada (y carpeta de spam)</li>
             <li>Haz clic en el enlace de activación</li>
             <li>Establece tu contraseña personalizada</li>
@@ -48,14 +48,14 @@ export const RegistrationSuccessPage: React.FC = () => {
         <div className="space-y-3">
           <Link
             to="/"
-            className="block w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+            className="block w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
           >
             Volver al Inicio
           </Link>
 
           <p className="text-sm text-gray-500">
             ¿No recibiste el email?{" "}
-            <button className="text-blue-600 hover:text-blue-700 font-semibold">
+            <button className="text-green-600 hover:text-green-700 font-semibold">
               Reenviar
             </button>
           </p>

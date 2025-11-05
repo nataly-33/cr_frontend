@@ -17,9 +17,17 @@ export const LandingPage: React.FC = () => {
   const loadPlans = async () => {
     try {
       const data = await publicApiService.getPlans();
-      setPlans(data);
+      console.log("Plans received:", data);
+      // Asegurarse de que data es un array
+      if (Array.isArray(data)) {
+        setPlans(data);
+      } else {
+        console.error("Plans data is not an array:", data);
+        setPlans([]);
+      }
     } catch (error) {
       console.error("Error loading plans:", error);
+      setPlans([]); // Establecer array vacío en caso de error
     } finally {
       setLoading(false);
     }
@@ -32,34 +40,37 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+      <section className="bg-gradient-to-r from-green-600 to-green-900 text-white">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">MediRecord</h1>
+          <h1 className="text-2xl font-bold">Clinic Records</h1>
           <Link
             to="/login"
-            className="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
+            className="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition"
           >
             Iniciar Sesión
           </Link>
         </nav>
 
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+          <h1 className="text-3xl md:text-5xl font-bold mb-6">
             Gestión Digital de Historias Clínicas
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-blue-100">
+          <p className="text-xl md:text-2xl mb-8 text-green-100">
             Sistema SaaS completo para hospitales y clínicas
           </p>
           <div className="flex gap-4 justify-center">
             <Link
               to="/register"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition"
+              className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition"
             >
               Comenzar Gratis
             </Link>
-            href="#pricing" className="bg-blue-700 text-white px-8 py-4
-            rounded-lg font-semibold text-lg hover:bg-blue-600 transition"
-            <a>Ver Precios</a>
+            <a
+              href="#pricing"
+              className="bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition"
+            >
+              Ver Precios
+            </a>
           </div>
         </div>
       </section>
@@ -115,7 +126,7 @@ export const LandingPage: React.FC = () => {
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-8 py-3 rounded-lg font-semibold transition ${
                   billingCycle === "monthly"
-                    ? "bg-blue-600 text-white shadow-md"
+                    ? "bg-green-600 text-white shadow-md"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -125,7 +136,7 @@ export const LandingPage: React.FC = () => {
                 onClick={() => setBillingCycle("annual")}
                 className={`px-8 py-3 rounded-lg font-semibold transition ${
                   billingCycle === "annual"
-                    ? "bg-blue-600 text-white shadow-md"
+                    ? "bg-green-600 text-white shadow-md"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -140,8 +151,17 @@ export const LandingPage: React.FC = () => {
           {/* Plans Grid */}
           {loading ? (
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">Cargando planes...</p>
+            </div>
+          ) : plans.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg mb-4">
+                No hay planes disponibles en este momento.
+              </p>
+              <p className="text-gray-500 text-sm">
+                Por favor, contacta al administrador o intenta más tarde.
+              </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-8">
@@ -150,12 +170,12 @@ export const LandingPage: React.FC = () => {
                   key={plan.id}
                   className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition ${
                     plan.plan_type === "professional"
-                      ? "ring-2 ring-blue-600"
+                      ? "ring-2 ring-green-600"
                       : ""
                   }`}
                 >
                   {plan.plan_type === "professional" && (
-                    <div className="bg-blue-600 text-white text-center py-2 text-sm font-semibold">
+                    <div className="bg-green-600 text-white text-center py-2 text-sm font-semibold">
                       MÁS POPULAR
                     </div>
                   )}
@@ -236,7 +256,7 @@ export const LandingPage: React.FC = () => {
                       to={`/register?plan=${plan.id}&cycle=${billingCycle}`}
                       className={`block w-full text-center py-3 rounded-lg font-semibold transition ${
                         plan.plan_type === "professional"
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          ? "bg-green-600 text-white hover:bg-green-700"
                           : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                       }`}
                     >
@@ -251,7 +271,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600 text-white">
+      <section className="py-20 bg-green-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             ¿Listo para digitalizar tu clínica?
@@ -262,7 +282,7 @@ export const LandingPage: React.FC = () => {
           </p>
           <Link
             to="/register"
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition inline-block"
+            className="bg-white text-green-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition inline-block"
           >
             Comenzar Ahora
           </Link>
@@ -272,7 +292,7 @@ export const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; 2025 MediRecord. Todos los derechos reservados.</p>
+          <p>&copy; 2025 Clinic Record. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>
