@@ -62,10 +62,16 @@ export const DocumentViewerPage = () => {
       const doc = await documentsService.getById(id!);
       setDocument(doc);
 
-      // Obtener URL de descarga
-      if (doc.file) {
-        const { url } = await documentsService.download(id!);
-        setFileUrl(url);
+      // Obtener URL de descarga SOLO si hay archivo físico
+      if (doc.file_path && doc.file_name) {
+        try {
+          const { url } = await documentsService.download(id!);
+          setFileUrl(url);
+        } catch (error) {
+          console.warn(
+            "No se pudo obtener URL de descarga, mostrando contenido JSON"
+          );
+        }
       }
     } catch (error) {
       showToast.error("Error al cargar el documento");
@@ -101,7 +107,7 @@ export const DocumentViewerPage = () => {
 
     try {
       const { url } = await documentsService.download(id!);
-      
+
       // Abrir en nueva pestaña
       window.open(url, "_blank");
       showToast.success("Descargando documento...");
@@ -149,7 +155,9 @@ export const DocumentViewerPage = () => {
     }
   };
 
-  const isPDF = document?.file_type === "application/pdf" || document?.file_name?.endsWith(".pdf");
+  const isPDF =
+    document?.file_type === "application/pdf" ||
+    document?.file_name?.endsWith(".pdf");
   const isImage = document?.file_type?.startsWith("image/");
 
   if (loading) {
@@ -180,21 +188,27 @@ export const DocumentViewerPage = () => {
                   {document.title}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  {DOCUMENT_TYPES[document.document_type as keyof typeof DOCUMENT_TYPES]}
+                  {
+                    DOCUMENT_TYPES[
+                      document.document_type as keyof typeof DOCUMENT_TYPES
+                    ]
+                  }
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Download className="h-4 w-4" />}
-                onClick={handleDownload}
-              >
-                Descargar
-              </Button>
-              {isPDF && (
+              {(document.file_path || fileUrl) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Download className="h-4 w-4" />}
+                  onClick={handleDownload}
+                >
+                  Descargar
+                </Button>
+              )}
+              {isPDF && fileUrl && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -291,7 +305,10 @@ export const DocumentViewerPage = () => {
 
               {/* Contenido */}
               <div className="p-4 bg-gray-50">
-                <div className="bg-white shadow-lg mx-auto" style={{ maxWidth: "fit-content" }}>
+                <div
+                  className="bg-white shadow-lg mx-auto"
+                  style={{ maxWidth: "fit-content" }}
+                >
                   {isPDF && fileUrl ? (
                     <Document
                       file={fileUrl}
@@ -321,23 +338,41 @@ export const DocumentViewerPage = () => {
                         src={fileUrl}
                         alt={document.title}
                         className="max-w-full h-auto"
-                        style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+                        style={{
+                          transform: `scale(${scale})`,
+                          transformOrigin: "top left",
+                        }}
+                      />
+                    </div>
+                  ) : document.content &&
+                    Object.keys(document.content).length > 0 ? (
+                    // Mostrar contenido estructurado (JSON)
+                    <div className="p-8 max-w-4xl">
+                      <DocumentContentViewer
+                        content={document.content}
+                        documentType={document.document_type}
                       />
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-96 text-gray-500">
                       <FileText className="h-12 w-12 mb-4" />
-                      <p className="font-medium mb-2">Vista previa no disponible</p>
-                      <p className="text-sm">
-                        Descarga el archivo para verlo
+                      <p className="font-medium mb-2">
+                        Vista previa no disponible
                       </p>
-                      <Button
-                        className="mt-4"
-                        leftIcon={<Download className="h-4 w-4" />}
-                        onClick={handleDownload}
-                      >
-                        Descargar Archivo
-                      </Button>
+                      <p className="text-sm">
+                        {document.file_path
+                          ? "Descarga el archivo para verlo"
+                          : "Este documento no tiene contenido disponible"}
+                      </p>
+                      {document.file_path && (
+                        <Button
+                          className="mt-4"
+                          leftIcon={<Download className="h-4 w-4" />}
+                          onClick={handleDownload}
+                        >
+                          Descargar Archivo
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -444,14 +479,13 @@ export const DocumentViewerPage = () => {
             <Card>
               <CardHeader title="Metadata" />
               <div className="space-y-2 text-sm">
-                <InfoItem
-                  label="Archivo"
-                  value={document.file_name || "N/A"}
-                />
+                <InfoItem label="Archivo" value={document.file_name || "N/A"} />
                 {document.file_size && (
                   <InfoItem
                     label="Tamaño"
-                    value={`${(document.file_size / 1024 / 1024).toFixed(2)} MB`}
+                    value={`${(document.file_size / 1024 / 1024).toFixed(
+                      2
+                    )} MB`}
                   />
                 )}
                 <InfoItem
@@ -506,3 +540,335 @@ const InfoItem = ({ icon, label, value }: InfoItemProps) => (
     </div>
   </div>
 );
+
+// Componente para visualizar contenido estructurado del documento
+interface DocumentContentViewerProps {
+  content: Record<string, any>;
+  documentType: string;
+}
+
+const DocumentContentViewer = ({
+  content,
+  documentType,
+}: DocumentContentViewerProps) => {
+  // Renderizar contenido según el tipo de documento
+  const renderConsultation = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center border-b pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">Consulta Médica</h2>
+        </div>
+
+        {content.chief_complaint && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Motivo de Consulta
+            </h3>
+            <p className="text-gray-700">{content.chief_complaint}</p>
+          </div>
+        )}
+
+        {content.history_present_illness && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Historia de Enfermedad Actual
+            </h3>
+            <p className="text-gray-700 whitespace-pre-wrap">
+              {content.history_present_illness}
+            </p>
+          </div>
+        )}
+
+        {content.vital_signs && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Signos Vitales
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              {content.vital_signs.blood_pressure && (
+                <div>
+                  <p className="text-sm text-gray-600">Presión Arterial</p>
+                  <p className="font-medium">
+                    {content.vital_signs.blood_pressure} mmHg
+                  </p>
+                </div>
+              )}
+              {content.vital_signs.heart_rate && (
+                <div>
+                  <p className="text-sm text-gray-600">Frecuencia Cardíaca</p>
+                  <p className="font-medium">
+                    {content.vital_signs.heart_rate} lpm
+                  </p>
+                </div>
+              )}
+              {content.vital_signs.temperature && (
+                <div>
+                  <p className="text-sm text-gray-600">Temperatura</p>
+                  <p className="font-medium">
+                    {content.vital_signs.temperature}°C
+                  </p>
+                </div>
+              )}
+              {content.vital_signs.respiratory_rate && (
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Frecuencia Respiratoria
+                  </p>
+                  <p className="font-medium">
+                    {content.vital_signs.respiratory_rate} rpm
+                  </p>
+                </div>
+              )}
+              {content.vital_signs.oxygen_saturation && (
+                <div>
+                  <p className="text-sm text-gray-600">Saturación O₂</p>
+                  <p className="font-medium">
+                    {content.vital_signs.oxygen_saturation}%
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {content.physical_examination && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Examen Físico
+            </h3>
+            <p className="text-gray-700 whitespace-pre-wrap">
+              {content.physical_examination}
+            </p>
+          </div>
+        )}
+
+        {content.diagnosis && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Diagnóstico
+            </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-gray-900 font-medium">{content.diagnosis}</p>
+            </div>
+          </div>
+        )}
+
+        {content.treatment_plan && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Plan de Tratamiento
+            </h3>
+            <p className="text-gray-700 whitespace-pre-wrap">
+              {content.treatment_plan}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderLabResult = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center border-b pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Resultados de Laboratorio
+          </h2>
+          {content.test_name && (
+            <p className="text-gray-600 mt-1">{content.test_name}</p>
+          )}
+        </div>
+
+        {content.test_date && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600">Fecha del examen</p>
+            <p className="font-medium">{content.test_date}</p>
+          </div>
+        )}
+
+        {content.results && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Resultados
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 border rounded-lg">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                      Parámetro
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                      Valor
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                      Unidad
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                      Referencia
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {Object.entries(content.results).map(
+                    ([key, value]: [string, any]) => (
+                      <tr key={key}>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          {key}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {value.value}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500">
+                          {value.unit}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500">
+                          {value.reference}
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {content.interpretation && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Interpretación
+            </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-gray-700">{content.interpretation}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderPrescription = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center border-b pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">Receta Médica</h2>
+        </div>
+
+        {content.diagnosis && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600">Diagnóstico</p>
+            <p className="font-medium text-gray-900">{content.diagnosis}</p>
+          </div>
+        )}
+
+        {content.medications && content.medications.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Medicamentos Prescritos
+            </h3>
+            <div className="space-y-4">
+              {content.medications.map((med: any, index: number) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4 bg-white"
+                >
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {med.name}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {med.dose && (
+                      <div>
+                        <span className="text-gray-600">Dosis:</span>
+                        <span className="ml-2 font-medium">{med.dose}</span>
+                      </div>
+                    )}
+                    {med.frequency && (
+                      <div>
+                        <span className="text-gray-600">Frecuencia:</span>
+                        <span className="ml-2 font-medium">
+                          {med.frequency}
+                        </span>
+                      </div>
+                    )}
+                    {med.duration && (
+                      <div>
+                        <span className="text-gray-600">Duración:</span>
+                        <span className="ml-2 font-medium">{med.duration}</span>
+                      </div>
+                    )}
+                    {med.via && (
+                      <div>
+                        <span className="text-gray-600">Vía:</span>
+                        <span className="ml-2 font-medium">{med.via}</span>
+                      </div>
+                    )}
+                  </div>
+                  {med.instructions && (
+                    <p className="mt-2 text-sm text-gray-600 italic">
+                      {med.instructions}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {content.instructions && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h3 className="font-semibold text-gray-900 mb-2">Instrucciones</h3>
+            <p className="text-gray-700">{content.instructions}</p>
+          </div>
+        )}
+
+        {content.duration && (
+          <div className="text-sm text-gray-600">
+            <strong>Duración del tratamiento:</strong> {content.duration}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderGeneric = () => {
+    return (
+      <div className="space-y-4">
+        <div className="text-center border-b pb-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Contenido del Documento
+          </h2>
+        </div>
+
+        {Object.entries(content).map(([key, value]) => (
+          <div key={key} className="border-b border-gray-200 pb-3">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-1">
+              {key.replace(/_/g, " ")}
+            </h3>
+            <div className="text-gray-900">
+              {typeof value === "object" ? (
+                <pre className="bg-gray-50 p-3 rounded text-sm overflow-x-auto">
+                  {JSON.stringify(value, null, 2)}
+                </pre>
+              ) : (
+                <p>{String(value)}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Seleccionar el renderizador según el tipo de documento
+  switch (documentType) {
+    case "consultation":
+      return renderConsultation();
+    case "lab_result":
+      return renderLabResult();
+    case "prescription":
+      return renderPrescription();
+    default:
+      return renderGeneric();
+  }
+};
