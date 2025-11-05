@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 // Public
 import { LandingPage } from "@modules/public/pages/LandingPage";
 import { RegisterPage } from "@modules/public/pages/RegisterPage";
-import { ActivationPage } from "@modules/public/pages/ActivationPage";
+import { ActivatePage } from "@modules/public/pages/ActivatePage";
 import { RegistrationSuccessPage } from "@modules/public/pages/RegistrationSuccessPage";
 
 // Auth
@@ -46,7 +46,7 @@ export const AppRoutes = () => {
       {/* Public routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/activate" element={<ActivationPage />} />
+      <Route path="/activate/:token" element={<ActivatePage />} />
       <Route
         path="/registration-success"
         element={<RegistrationSuccessPage />}
