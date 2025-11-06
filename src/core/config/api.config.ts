@@ -35,5 +35,15 @@ export const ENDPOINTS = {
   REPORTS: {
     GENERATE: "/reports/generator/generate/",
     LIST: "/reports/executions/",
+    DETAIL: (id: string) => `/reports/executions/${id}/`,
+    DOWNLOAD: (id: string) => `/reports/executions/${id}/download/`,
+    ANALYZE: (id: string) => `/reports/executions/${id}/analyze/`,
+    SUMMARIZE: (id: string) => `/reports/executions/${id}/summarize/`,
+    RECOMMENDATIONS: (id: string) => `/reports/executions/${id}/recommendations/`,
+    AI_INSIGHTS: (id: string) => `/reports/executions/${id}/ai-insights/`,
+  },
+  SEED: {
+    GENERATE: "/seed/generate/",
+    LIST: "/seed/list/",
   },
 };

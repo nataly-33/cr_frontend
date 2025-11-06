@@ -1,5 +1,7 @@
-import { LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "@core/store/auth.store";
+import { NotificationBell } from "@modules/notifications/components";
 
 export const Navbar = () => {
   const { user, logout } = useAuthStore();
@@ -25,9 +27,24 @@ export const Navbar = () => {
             <span className="text-xs" style={{ color: 'rgb(var(--text-secondary))' }}>
               {user?.tenant?.name ?? ""}
             </span>
+
+            {/* Notification Bell */}
+            <NotificationBell />
+
+            {/* Notification Preferences Link */}
+            <Link
+              to="/notifications/preferences"
+              className="p-2 rounded-lg hover:bg-opacity-10 hover:bg-primary-500 transition-colors"
+              title="Preferencias de notificaciones"
+            >
+              <Settings className="h-5 w-5" style={{ color: 'rgb(var(--text-primary))' }} />
+            </Link>
+
+            {/* Logout Button */}
             <button
               onClick={logout}
               className="p-2 rounded-lg hover:bg-opacity-10 hover:bg-primary-500 transition-colors"
+              title="Cerrar sesión"
             >
               <LogOut className="h-5 w-5" style={{ color: 'rgb(var(--text-primary))' }} />
             </button>

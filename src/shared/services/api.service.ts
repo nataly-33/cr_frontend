@@ -75,6 +75,10 @@ class ApiService {
     return this.axiosInstance.put<T>(url, data, config);
   }
 
+  public patch<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+    return this.axiosInstance.patch<T>(url, data, config);
+  }
+
   public delete<T>(url: string, config?: AxiosRequestConfig) {
     return this.axiosInstance.delete<T>(url, config);
   }

@@ -37,8 +37,7 @@ import {
   TriageFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
-import { NotificationPreferencesPage } from "@modules/notifications/pages/NotificationPreferencesPage";
-import { AdminPage } from "@modules/admin/pages";
+import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modules/notifications";
 
 export const AppRoutes = () => {
   return (
@@ -107,13 +106,11 @@ export const AppRoutes = () => {
 
         {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
-        <Route
-          path="/settings/notifications"
-          element={<NotificationPreferencesPage />}
-        />
 
-        {/* Admin */}
-        <Route path="/admin" element={<AdminPage />} />
+        {/* Notificaciones */}
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/notifications/preferences" element={<PreferencesPage />} />
+        <Route path="/notifications/send" element={<SendNotificationPage />} />
       </Route>
 
       {/* Redirect for unknown routes */}

@@ -1,124 +1,152 @@
-import { apiService } from '@/shared/services/api.service';
+import { apiService } from "@shared/services/api.service";
+import type {
+  Notification,
+  NotificationPreferences,
+  NotificationStats,
+  UnreadCount,
+  NotificationUpdatePayload,
+  NotificationType,
+  NotificationStatus,
+  NotificationChannel,
+} from "../types";
+import type { PaginatedResponse } from "@core/types";
 
-export interface INotification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  is_read: boolean;
-  icon: string;
-  color: string;
-  related_model: string | null;
-  related_id: string | null;
-  user_email: string;
-  created_at: string;
-  read_at: string | null;
-}
+const BASE_URL = "/notifications";
 
-export interface INotificationPreference {
-  document_uploaded_email: boolean;
-  record_created_email: boolean;
-  record_updated_email: boolean;
-  access_granted_email: boolean;
-  comment_added_email: boolean;
-  max_emails_per_day: number;
-  quiet_hours_start: string | null;
-  quiet_hours_end: string | null;
-  send_daily_digest: boolean;
+interface GetNotificationsParams {
+  page?: number;
+  page_size?: number;
+  status?: NotificationStatus;
+  type?: NotificationType;
+  ordering?: string;
 }
 
 export const notificationsService = {
-  /**
-   * Obtener todas las notificaciones del usuario
-   */
-  getNotifications: async (limit = 10): Promise<INotification[]> => {
-    try {
-      const response = await apiService.get<{ results: INotification[] } | INotification[]>(`/notifications/?limit=${limit}`);
-      const data = response.data as any;
-      return data.results || data;
-    } catch (error) {
-      console.error('Error getting notifications:', error);
-      throw error;
-    }
+  // Listar mis notificaciones
+  getAll: async (params?: GetNotificationsParams) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.page_size) queryParams.append("page_size", params.page_size.toString());
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.type) queryParams.append("type", params.type);
+    if (params?.ordering) queryParams.append("ordering", params.ordering);
+
+    const url = `${BASE_URL}/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const response = await apiService.get<PaginatedResponse<Notification>>(url);
+    return response.data;
   },
 
-  /**
-   * Obtener cantidad de notificaciones sin leer
-   */
-  getUnreadCount: async (): Promise<number> => {
-    try {
-      const response = await apiService.get<{ unread_count: number }>('/notifications/unread_count/');
-      const data = response.data as any;
-      return data.unread_count || 0;
-    } catch (error) {
-      console.error('Error getting unread count:', error);
-      throw error;
-    }
+  // Obtener detalle de una notificación
+  getById: async (id: string) => {
+    const response = await apiService.get<Notification>(`${BASE_URL}/${id}/`);
+    return response.data;
   },
 
-  /**
-   * Obtener solo las notificaciones sin leer (máximo 10)
-   */
-  getUnreadNotifications: async (): Promise<INotification[]> => {
-    try {
-      const response = await apiService.get<INotification[]>('/notifications/unread/');
-      const data = response.data as any;
-      return data || [];
-    } catch (error) {
-      console.error('Error getting unread notifications:', error);
-      throw error;
-    }
+  // Marcar una notificación como leída
+  markAsRead: async (id: string) => {
+    const response = await apiService.patch<Notification>(
+      `${BASE_URL}/${id}/read/`,
+      {}
+    );
+    return response.data;
   },
 
-  /**
-   * Marcar una notificación específica como leída
-   */
-  markAsRead: async (id: string): Promise<INotification> => {
-    try {
-      const response = await apiService.post<INotification>(`/notifications/${id}/mark_as_read/`);
-      return response.data as INotification;
-    } catch (error) {
-      console.error(`Error marking notification ${id} as read:`, error);
-      throw error;
-    }
+  // Marcar como no leída
+  markAsUnread: async (id: string) => {
+    const response = await apiService.patch<Notification>(
+      `${BASE_URL}/${id}/unread/`,
+      {}
+    );
+    return response.data;
   },
 
-  /**
-   * Marcar todas las notificaciones como leídas
-   */
-  markAllAsRead: async (): Promise<{ updated: number }> => {
-    try {
-      const response = await apiService.post<{ updated: number }>('/notifications/mark_all_as_read/');
-      return response.data as { updated: number };
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      throw error;
-    }
+  // Marcar todas como leídas
+  markAllAsRead: async () => {
+    const response = await apiService.patch<{ success: boolean; updated: number }>(
+      `${BASE_URL}/mark_all_as_read/`,
+      {}
+    );
+    return response.data;
   },
 
-  /**
-   * Obtener preferencias de notificación del usuario
-   */
-  getPreferences: async (): Promise<INotificationPreference> => {
-    try {
-      const response = await apiService.get<INotificationPreference>('/notifications/preferences/my_preferences/');
-      return response.data as INotificationPreference;
-    } catch (error) {
-      console.error('Error getting notification preferences:', error);
-      throw error;
-    }
+  // Obtener contador de no leídas
+  getUnreadCount: async () => {
+    const response = await apiService.get<UnreadCount>(
+      `${BASE_URL}/unread_count/`
+    );
+    return response.data;
   },
 
-  /**
-   * Actualizar preferencias de notificación del usuario
-   */
-  updatePreferences: async (data: Partial<INotificationPreference>): Promise<INotificationPreference> => {
-    try {
-      const response = await apiService.put<INotificationPreference>('/notifications/preferences/my_preferences/', data);
-      return response.data as INotificationPreference;
-    } catch (error) {
-      console.error('Error updating notification preferences:', error);
-      throw error;
-    }
-  }
+  // Obtener estadísticas
+  getStats: async () => {
+    const response = await apiService.get<NotificationStats>(
+      `${BASE_URL}/stats/`
+    );
+    return response.data;
+  },
+
+  // Obtener mis preferencias
+  getPreferences: async () => {
+    const response = await apiService.get<NotificationPreferences>(
+      `${BASE_URL}/preferences/`
+    );
+    return response.data;
+  },
+
+  // Actualizar mis preferencias
+  updatePreferences: async (data: NotificationUpdatePayload) => {
+    const response = await apiService.put<NotificationPreferences>(
+      `${BASE_URL}/preferences/`,
+      data
+    );
+    return response.data;
+  },
+
+  // Eliminar una notificación
+  delete: async (id: string) => {
+    await apiService.delete(`${BASE_URL}/${id}/`);
+  },
+
+  // Enviar notificación a usuarios específicos del tenant
+  send: async (payload: {
+    title: string;
+    body: string;
+    type?: string;
+    channel?: NotificationChannel;
+    recipient_ids: string[];
+    data?: Record<string, any>;
+  }) => {
+    const response = await apiService.post<{
+      success: boolean;
+      notifications_created: number;
+      notifications: Array<{
+        id: string;
+        user_id: string;
+        status: string;
+      }>;
+    }>(`${BASE_URL}/send/`, {
+      title: payload.title,
+      body: payload.body,
+      type: payload.type || "system.alert",
+      channel: payload.channel || "in_app",
+      recipient_ids: payload.recipient_ids,
+      data: payload.data || {},
+    });
+    return response.data;
+  },
+
+  // Obtener lista de usuarios disponibles para enviar notificaciones
+  getRecipients: async () => {
+    const response = await apiService.get<{
+      recipients: Array<{
+        id: string;
+        email: string;
+        first_name: string;
+        last_name: string;
+        full_name: string;
+      }>;
+      count: number;
+    }>(`${BASE_URL}/get_recipients/`);
+    return response.data;
+  },
 };
