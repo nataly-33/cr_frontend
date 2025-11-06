@@ -12,8 +12,10 @@ export interface ClinicalDocument {
   file: string;
   file_url?: string;
   file_name?: string;
+  file_path?: string;
   file_size?: number;
   file_type?: string;
+  content?: Record<string, any>; // Contenido estructurado del documento
   version: number;
   status: "draft" | "final" | "archived";
   is_signed: boolean;

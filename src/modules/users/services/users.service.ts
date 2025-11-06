@@ -35,7 +35,7 @@ export const usersService = {
       queryParams.append("is_active", params.is_active.toString());
 
     const response = await apiService.get<PaginatedResponse<User>>(
-      `/auth/users/?${queryParams.toString()}`
+      `/users/?${queryParams.toString()}`
     );
     return response.data;
   },
@@ -44,7 +44,7 @@ export const usersService = {
    * Get user by ID
    */
   getById: async (id: string): Promise<User> => {
-    const response = await apiService.get<User>(`/auth/users/${id}/`);
+    const response = await apiService.get<User>(`/users/${id}/`);
     return response.data;
   },
 
@@ -52,7 +52,7 @@ export const usersService = {
    * Get current user
    */
   getMe: async (): Promise<User> => {
-    const response = await apiService.get<User>("/auth/users/me/");
+    const response = await apiService.get<User>("/users/me/");
     return response.data;
   },
 
@@ -60,7 +60,7 @@ export const usersService = {
    * Create new user
    */
   create: async (data: UserFormData): Promise<User> => {
-    const response = await apiService.post<User>("/auth/users/", data);
+    const response = await apiService.post<User>("/users/", data);
     return response.data;
   },
 
@@ -68,7 +68,7 @@ export const usersService = {
    * Update user
    */
   update: async (id: string, data: Partial<UserFormData>): Promise<User> => {
-    const response = await apiService.put<User>(`/auth/users/${id}/`, data);
+    const response = await apiService.put<User>(`/users/${id}/`, data);
     return response.data;
   },
 
@@ -76,7 +76,7 @@ export const usersService = {
    * Delete user
    */
   delete: async (id: string): Promise<void> => {
-    await apiService.delete(`/auth/users/${id}/`);
+    await apiService.delete(`/users/${id}/`);
   },
 
   /**
@@ -84,7 +84,7 @@ export const usersService = {
    */
   toggleActive: async (id: string): Promise<User> => {
     const response = await apiService.post<User>(
-      `/auth/users/${id}/toggle-active/`
+      `/users/${id}/toggle-active/`
     );
     return response.data;
   },
@@ -97,7 +97,7 @@ export const usersService = {
     data: ChangePasswordData
   ): Promise<{ message: string }> => {
     const response = await apiService.post<{ message: string }>(
-      `/auth/users/${id}/change-password/`,
+      `/users/${id}/change-password/`,
       data
     );
     return response.data;
@@ -110,7 +110,7 @@ export const usersService = {
     data: UpdatePreferencesData
   ): Promise<{ message: string }> => {
     const response = await apiService.put<{ message: string }>(
-      "/auth/users/preferences/",
+      "/users/preferences/",
       data
     );
     return response.data;
@@ -120,15 +120,15 @@ export const usersService = {
    * Get all roles
    */
   getRoles: async (): Promise<Role[]> => {
-    const response = await apiService.get<PaginatedResponse<Role>>("/auth/roles/");
-    return response.data.results;
+    const response = await apiService.get<PaginatedResponse<Role>>("/roles/");
+    return response.data.results || response.data;
   },
 
   /**
    * Get role by ID
    */
   getRoleById: async (id: string): Promise<Role> => {
-    const response = await apiService.get<Role>(`/auth/roles/${id}/`);
+    const response = await apiService.get<Role>(`/roles/${id}/`);
     return response.data;
   },
 
@@ -136,7 +136,7 @@ export const usersService = {
    * Create role
    */
   createRole: async (data: Partial<Role>): Promise<Role> => {
-    const response = await apiService.post<Role>("/auth/roles/", data);
+    const response = await apiService.post<Role>("/roles/", data);
     return response.data;
   },
 
@@ -144,7 +144,7 @@ export const usersService = {
    * Update role
    */
   updateRole: async (id: string, data: Partial<Role>): Promise<Role> => {
-    const response = await apiService.put<Role>(`/auth/roles/${id}/`, data);
+    const response = await apiService.put<Role>(`/roles/${id}/`, data);
     return response.data;
   },
 
@@ -152,14 +152,14 @@ export const usersService = {
    * Delete role
    */
   deleteRole: async (id: string): Promise<void> => {
-    await apiService.delete(`/auth/roles/${id}/`);
+    await apiService.delete(`/roles/${id}/`);
   },
 
   /**
    * Get all permissions
    */
   getPermissions: async (): Promise<Permission[]> => {
-    const response = await apiService.get<PaginatedResponse<Permission>>("/auth/permissions/");
-    return response.data.results;
+    const response = await apiService.get<PaginatedResponse<Permission>>("/permissions/");
+    return response.data.results || response.data;
   },
 };

@@ -1,7 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
+
+// Public
+import { LandingPage } from "@modules/public/pages/LandingPage";
+import { RegisterPage } from "@modules/public/pages/RegisterPage";
+import { ActivatePage } from "@modules/public/pages/ActivatePage";
+import { RegistrationSuccessPage } from "@modules/public/pages/RegistrationSuccessPage";
+
+// Auth
 import { LoginPage } from "@modules/auth/pages/LoginPage";
+
+// Protected / App
 import { DashboardPage } from "@modules/dashboard/pages/DashboardPage";
+import { AnalyticsDashboardPage } from "@modules/analytics/pages";
 import { PatientsListPage } from "@modules/patients/pages/PatientsListPage";
 import { PatientFormPage } from "@modules/patients/pages/PatientFormPage";
 import { PatientDetailPage } from "@modules/patients/pages/PatientDetailPage";
@@ -20,10 +31,7 @@ import {
   RolesListPage,
   RoleFormPage,
 } from "@modules/users/pages";
-import {
-  ReportsPage,
-  ReportViewerPage,
-} from "@modules/reports/pages";
+import { ReportsPage, ReportViewerPage } from "@modules/reports/pages";
 import {
   ClinicalFormsListPage,
   TriageFormPage,
@@ -34,21 +42,32 @@ import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modul
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Rutas públicas */}
+      {/* Public routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/activate/:token" element={<ActivatePage />} />
+      <Route
+        path="/registration-success"
+        element={<RegistrationSuccessPage />}
+      />
       <Route path="/login" element={<LoginPage />} />
 
-      {/* Rutas protegidas */}
+      {/* Protected routes (nested approach - active) */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsDashboardPage />} />
 
-        {/* Pacientes */}
+        {/* Patients */}
         <Route path="/patients" element={<PatientsListPage />} />
         <Route path="/patients/new" element={<PatientFormPage />} />
         <Route path="/patients/:id" element={<PatientDetailPage />} />
         <Route path="/patients/:id/edit" element={<PatientFormPage />} />
 
-        {/* Historias Clínicas */}
-        <Route path="/clinical-records/new" element={<ClinicalRecordFormPage />} />
+        {/* Clinical records */}
+        <Route
+          path="/clinical-records/new"
+          element={<ClinicalRecordFormPage />}
+        />
         <Route
           path="/clinical-records/:id"
           element={<ClinicalRecordDetailPage />}
@@ -58,17 +77,20 @@ export const AppRoutes = () => {
           element={<ClinicalRecordFormPage />}
         />
 
-        {/* Documentos */}
+        {/* Documents */}
         <Route path="/documents" element={<DocumentsListPage />} />
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
         <Route path="/documents/:id" element={<DocumentViewerPage />} />
 
-        {/* Formularios Clínicos */}
+        {/* Clinical forms */}
         <Route path="/clinical-forms" element={<ClinicalFormsListPage />} />
         <Route path="/clinical-forms/triage/new" element={<TriageFormPage />} />
-        <Route path="/clinical-forms/triage/:id/edit" element={<TriageFormPage />} />
+        <Route
+          path="/clinical-forms/triage/:id/edit"
+          element={<TriageFormPage />}
+        />
 
-        {/* Usuarios */}
+        {/* Users */}
         <Route path="/users" element={<UsersListPage />} />
         <Route path="/users/new" element={<UserFormPage />} />
         <Route path="/users/:id/edit" element={<UserFormPage />} />
@@ -78,11 +100,11 @@ export const AppRoutes = () => {
         <Route path="/roles/new" element={<RoleFormPage />} />
         <Route path="/roles/:id/edit" element={<RoleFormPage />} />
 
-        {/* Reportes */}
+        {/* Reports */}
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/reports/:id" element={<ReportViewerPage />} />
 
-        {/* Configuración */}
+        {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Notificaciones */}
@@ -91,8 +113,8 @@ export const AppRoutes = () => {
         <Route path="/notifications/send" element={<SendNotificationPage />} />
       </Route>
 
-      {/* Redirect por defecto */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Redirect for unknown routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

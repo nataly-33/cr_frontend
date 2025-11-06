@@ -129,6 +129,18 @@ export const Sidebar = () => {
             })}
           </nav>
         </div>
+
+        {/* Notification Center in Sidebar Footer */}
+        <div className="flex-shrink-0 border-t p-4" style={{
+          borderColor: 'rgb(var(--border-color))'
+        }}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              Notificaciones
+            </span>
+            <NotificationCenter />
+          </div>
+        </div>
       </div>
     </div>
   );
