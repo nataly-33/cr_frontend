@@ -1,4 +1,4 @@
-import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield, Bell, ChevronDown } from "lucide-react";
+import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield, Bell, ChevronDown, CreditCard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -33,6 +33,15 @@ export const Sidebar = () => {
         { label: "Ver notificaciones", path: "/notifications" },
         { label: "Enviar notificación", path: "/notifications/send" },
         { label: "Preferencias", path: "/notifications/preferences" },
+      ],
+    },
+    {
+      icon: CreditCard,
+      label: "Facturación",
+      path: "/billing",
+      submenu: [
+        { label: "Planes", path: "/billing" },
+        { label: "Pagos", path: "/billing/payments" },
       ],
     },
     { icon: Settings, label: t('navigation.settings'), path: "/settings" },

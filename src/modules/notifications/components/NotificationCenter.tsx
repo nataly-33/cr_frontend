@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check } from 'lucide-react';
-import { notificationsService, type INotification } from '../services/notifications.service';
+import { notificationsService } from '../services/notifications.service';
+import type { Notification } from '../types';
 
 export const NotificationCenter: React.FC = () => {
-  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,24 +71,34 @@ export const NotificationCenter: React.FC = () => {
     }
   };
 
-  const getColorClasses = (color: string) => {
+  const getColorClasses = (type: string) => {
     const colorMap: Record<string, string> = {
-      blue: 'bg-blue-50 border-blue-200',
-      green: 'bg-green-50 border-green-200',
-      red: 'bg-red-50 border-red-200',
-      yellow: 'bg-yellow-50 border-yellow-200',
+      'document.uploaded': 'bg-blue-50 border-blue-200',
+      'clinical_record.result': 'bg-green-50 border-green-200',
+      'system.alert': 'bg-red-50 border-red-200',
+      'appointment.created': 'bg-yellow-50 border-yellow-200',
     };
-    return colorMap[color] || 'bg-gray-50 border-gray-200';
+    return colorMap[type] || 'bg-gray-50 border-gray-200';
   };
 
-  const getColorBadge = (color: string) => {
+  const getColorBadge = (type: string) => {
     const badgeMap: Record<string, string> = {
-      blue: 'text-blue-600',
-      green: 'text-green-600',
-      red: 'text-red-600',
-      yellow: 'text-yellow-600',
+      'document.uploaded': 'text-blue-600',
+      'clinical_record.result': 'text-green-600',
+      'system.alert': 'text-red-600',
+      'appointment.created': 'text-yellow-600',
     };
-    return badgeMap[color] || 'text-gray-600';
+    return badgeMap[type] || 'text-gray-600';
+  };
+
+  const getIcon = (type: string) => {
+    const iconMap: Record<string, string> = {
+      'document.uploaded': '📄',
+      'clinical_record.result': '🏥',
+      'system.alert': '🔔',
+      'appointment.created': '📅',
+    };
+    return iconMap[type] || '📬';
   };
 
   return (
@@ -144,19 +155,17 @@ export const NotificationCenter: React.FC = () => {
               notifications.map(notif => (
                 <div 
                   key={notif.id} 
-                  className={`p-4 border-b border-gray-100 hover:bg-opacity-70 transition ${getColorClasses(notif.color)}`}
+                  className={`p-4 border-b border-gray-100 hover:bg-opacity-70 transition ${getColorClasses(notif.type)}`}
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div className="flex-1">
                       <div className="flex items-start gap-2">
-                        <span className={`text-lg ${getColorBadge(notif.color)}`}>
-                          {notif.icon === 'file' && '📄'}
-                          {notif.icon === 'file-medical' && '🏥'}
-                          {notif.icon === 'bell' && '🔔'}
+                        <span className={`text-lg ${getColorBadge(notif.type)}`}>
+                          {getIcon(notif.type)}
                         </span>
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900">{notif.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                          <p className="text-sm text-gray-600 mt-1">{notif.body}</p>
                           <p className="text-xs text-gray-400 mt-2">
                             {new Date(notif.created_at).toLocaleString('es-ES')}
                           </p>
