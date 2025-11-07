@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, X, Check } from 'lucide-react';
-import { notificationsService } from '../services/notifications.service';
-import type { Notification } from '../types';
+import React, { useState, useEffect } from "react";
+import { Bell, X, Check } from "lucide-react";
+import { notificationsService } from "../services/notifications.service";
+import type { Notification } from "../types";
 
 export const NotificationCenter: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -19,12 +19,14 @@ export const NotificationCenter: React.FC = () => {
 
   const loadUnreadCount = async () => {
     try {
-      const count = await notificationsService.getUnreadCount();
+      const countRes = await notificationsService.getUnreadCount();
+      const count =
+        typeof countRes === "number" ? countRes : countRes?.unread_count ?? 0;
       setUnreadCount(count);
       setError(null);
     } catch (error) {
-      console.error('Error loading unread count:', error);
-      setError('No se pudo cargar las notificaciones');
+      console.error("Error loading unread count:", error);
+      setError("No se pudo cargar las notificaciones");
     }
   };
 
@@ -32,11 +34,12 @@ export const NotificationCenter: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      // Use service helper to fetch unread notifications
       const notifs = await notificationsService.getUnreadNotifications();
-      setNotifications(notifs);
+      setNotifications(notifs || []);
     } catch (error) {
-      console.error('Error loading notifications:', error);
-      setError('Error al cargar notificaciones');
+      console.error("Error loading notifications:", error);
+      setError("Error al cargar notificaciones");
     } finally {
       setLoading(false);
     }
@@ -52,11 +55,11 @@ export const NotificationCenter: React.FC = () => {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await notificationsService.markAsRead(notificationId);
-      setNotifications(notifications.filter(n => n.id !== notificationId));
+      setNotifications(notifications.filter((n) => n.id !== notificationId));
       setUnreadCount(Math.max(0, unreadCount - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-      setError('Error al marcar como leído');
+      console.error("Error marking notification as read:", error);
+      setError("Error al marcar como leído");
     }
   };
 
@@ -66,44 +69,44 @@ export const NotificationCenter: React.FC = () => {
       setNotifications([]);
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all as read:', error);
-      setError('Error al marcar todas como leído');
+      console.error("Error marking all as read:", error);
+      setError("Error al marcar todas como leído");
     }
   };
 
   const getColorClasses = (type: string) => {
     const colorMap: Record<string, string> = {
-      'document.uploaded': 'bg-blue-50 border-blue-200',
-      'clinical_record.result': 'bg-green-50 border-green-200',
-      'system.alert': 'bg-red-50 border-red-200',
-      'appointment.created': 'bg-yellow-50 border-yellow-200',
+      "document.uploaded": "bg-blue-50 border-blue-200",
+      "clinical_record.result": "bg-green-50 border-green-200",
+      "system.alert": "bg-red-50 border-red-200",
+      "appointment.created": "bg-yellow-50 border-yellow-200",
     };
-    return colorMap[type] || 'bg-gray-50 border-gray-200';
+    return colorMap[type] || "bg-gray-50 border-gray-200";
   };
 
   const getColorBadge = (type: string) => {
     const badgeMap: Record<string, string> = {
-      'document.uploaded': 'text-blue-600',
-      'clinical_record.result': 'text-green-600',
-      'system.alert': 'text-red-600',
-      'appointment.created': 'text-yellow-600',
+      "document.uploaded": "text-blue-600",
+      "clinical_record.result": "text-green-600",
+      "system.alert": "text-red-600",
+      "appointment.created": "text-yellow-600",
     };
-    return badgeMap[type] || 'text-gray-600';
+    return badgeMap[type] || "text-gray-600";
   };
 
   const getIcon = (type: string) => {
     const iconMap: Record<string, string> = {
-      'document.uploaded': '📄',
-      'clinical_record.result': '🏥',
-      'system.alert': '🔔',
-      'appointment.created': '📅',
+      "document.uploaded": "📄",
+      "clinical_record.result": "🏥",
+      "system.alert": "🔔",
+      "appointment.created": "📅",
     };
-    return iconMap[type] || '📬';
+    return iconMap[type] || "📬";
   };
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={handleBellClick}
         className="relative p-2 text-gray-600 hover:text-gray-900 transition"
         title="Notificaciones"
@@ -112,7 +115,7 @@ export const NotificationCenter: React.FC = () => {
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
@@ -149,25 +152,35 @@ export const NotificationCenter: React.FC = () => {
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
-                {unreadCount === 0 ? 'Sin notificaciones' : 'Cargando notificaciones...'}
+                {unreadCount === 0
+                  ? "Sin notificaciones"
+                  : "Cargando notificaciones..."}
               </div>
             ) : (
-              notifications.map(notif => (
-                <div 
-                  key={notif.id} 
-                  className={`p-4 border-b border-gray-100 hover:bg-opacity-70 transition ${getColorClasses(notif.type)}`}
+              notifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className={`p-4 border-b border-gray-100 hover:bg-opacity-70 transition ${getColorClasses(
+                    notif.type
+                  )}`}
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div className="flex-1">
                       <div className="flex items-start gap-2">
-                        <span className={`text-lg ${getColorBadge(notif.type)}`}>
+                        <span
+                          className={`text-lg ${getColorBadge(notif.type)}`}
+                        >
                           {getIcon(notif.type)}
                         </span>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-900">{notif.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{notif.body}</p>
+                          <p className="font-semibold text-gray-900">
+                            {notif.title}
+                          </p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {notif.body}
+                          </p>
                           <p className="text-xs text-gray-400 mt-2">
-                            {new Date(notif.created_at).toLocaleString('es-ES')}
+                            {new Date(notif.created_at).toLocaleString("es-ES")}
                           </p>
                         </div>
                       </div>

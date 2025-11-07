@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, Check, X } from 'lucide-react';
-import { notificationsService, type INotificationPreference } from '../services/notifications.service';
+import React, { useState, useEffect } from "react";
+import { AlertCircle, Check, X } from "lucide-react";
+import { notificationsService } from "../services/notifications.service";
 
 export const NotificationPreferencesPage: React.FC = () => {
-  const [preferences, setPreferences] = useState<INotificationPreference | null>(null);
+  const [preferences, setPreferences] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     loadPreferences();
@@ -18,7 +21,7 @@ export const NotificationPreferencesPage: React.FC = () => {
       const prefs = await notificationsService.getPreferences();
       setPreferences(prefs);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error cargando preferencias' });
+      setMessage({ type: "error", text: "Error cargando preferencias" });
     } finally {
       setLoading(false);
     }
@@ -30,29 +33,32 @@ export const NotificationPreferencesPage: React.FC = () => {
     try {
       setSaving(true);
       await notificationsService.updatePreferences(preferences);
-      setMessage({ type: 'success', text: 'Preferencias guardadas correctamente' });
+      setMessage({
+        type: "success",
+        text: "Preferencias guardadas correctamente",
+      });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error guardando preferencias' });
+      setMessage({ type: "error", text: "Error guardando preferencias" });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleToggle = (field: keyof INotificationPreference) => {
-    if (preferences && typeof preferences[field] === 'boolean') {
+  const handleToggle = (field: string) => {
+    if (preferences && typeof preferences[field] === "boolean") {
       setPreferences({
         ...preferences,
-        [field]: !preferences[field]
+        [field]: !preferences[field],
       });
     }
   };
 
-  const handleNumberChange = (field: keyof INotificationPreference, value: number) => {
-    if (preferences && typeof preferences[field] === 'number') {
+  const handleNumberChange = (field: string, value: number) => {
+    if (preferences && typeof preferences[field] === "number") {
       setPreferences({
         ...preferences,
-        [field]: value
+        [field]: value,
       });
     }
   };
@@ -80,16 +86,22 @@ export const NotificationPreferencesPage: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Preferencias de Notificaciones</h1>
-        <p className="text-gray-600 mt-2">Gestiona cómo deseas recibir notificaciones</p>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Preferencias de Notificaciones
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Gestiona cómo deseas recibir notificaciones
+        </p>
       </div>
 
       {message && (
-        <div className={`mb-6 p-4 rounded-lg flex gap-3 ${
-          message.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-800'
-            : 'bg-red-50 border border-red-200 text-red-800'
-        }`}>
+        <div
+          className={`mb-6 p-4 rounded-lg flex gap-3 ${
+            message.type === "success"
+              ? "bg-green-50 border border-green-200 text-green-800"
+              : "bg-red-50 border border-red-200 text-red-800"
+          }`}
+        >
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
           <p>{message.text}</p>
         </div>
@@ -106,50 +118,60 @@ export const NotificationPreferencesPage: React.FC = () => {
               <input
                 type="checkbox"
                 checked={preferences.document_uploaded_email}
-                onChange={() => handleToggle('document_uploaded_email')}
+                onChange={() => handleToggle("document_uploaded_email")}
                 className="w-4 h-4 text-blue-600 rounded cursor-pointer"
               />
-              <span className="text-gray-700">Cuando se carga un documento</span>
+              <span className="text-gray-700">
+                Cuando se carga un documento
+              </span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={preferences.record_created_email}
-                onChange={() => handleToggle('record_created_email')}
+                onChange={() => handleToggle("record_created_email")}
                 className="w-4 h-4 text-blue-600 rounded cursor-pointer"
               />
-              <span className="text-gray-700">Cuando se crea una historia clínica</span>
+              <span className="text-gray-700">
+                Cuando se crea una historia clínica
+              </span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={preferences.record_updated_email}
-                onChange={() => handleToggle('record_updated_email')}
+                onChange={() => handleToggle("record_updated_email")}
                 className="w-4 h-4 text-blue-600 rounded cursor-pointer"
               />
-              <span className="text-gray-700">Cuando se actualiza una historia clínica</span>
+              <span className="text-gray-700">
+                Cuando se actualiza una historia clínica
+              </span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={preferences.access_granted_email}
-                onChange={() => handleToggle('access_granted_email')}
+                onChange={() => handleToggle("access_granted_email")}
                 className="w-4 h-4 text-blue-600 rounded cursor-pointer"
               />
-              <span className="text-gray-700">Cuando se otorga acceso a documentos</span>
+              <span className="text-gray-700">
+                Cuando se otorga acceso a documentos
+              </span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={preferences.comment_added_email}
-                onChange={() => handleToggle('comment_added_email')}
+                onChange={() => handleToggle("comment_added_email")}
                 className="w-4 h-4 text-blue-600 rounded cursor-pointer"
               />
-              <span className="text-gray-700">Cuando se agrega un comentario</span>
+              <span className="text-gray-700">
+                Cuando se agrega un comentario
+              </span>
             </label>
           </div>
         </div>
@@ -161,7 +183,10 @@ export const NotificationPreferencesPage: React.FC = () => {
           </h2>
           <div className="pl-6">
             <label className="block text-gray-700 font-medium mb-3">
-              Máximo de emails por día: <span className="text-blue-600 font-bold">{preferences.max_emails_per_day}</span>
+              Máximo de emails por día:{" "}
+              <span className="text-blue-600 font-bold">
+                {preferences.max_emails_per_day}
+              </span>
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -169,7 +194,12 @@ export const NotificationPreferencesPage: React.FC = () => {
                 min="1"
                 max="50"
                 value={preferences.max_emails_per_day}
-                onChange={(e) => handleNumberChange('max_emails_per_day', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleNumberChange(
+                    "max_emails_per_day",
+                    parseInt(e.target.value)
+                  )
+                }
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
               <span className="text-sm text-gray-500 min-w-fit">
@@ -177,7 +207,9 @@ export const NotificationPreferencesPage: React.FC = () => {
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-3">
-              Recibirás como máximo <strong>{preferences.max_emails_per_day}</strong> emails por día para evitar sobrecarga.
+              Recibirás como máximo{" "}
+              <strong>{preferences.max_emails_per_day}</strong> emails por día
+              para evitar sobrecarga.
             </p>
           </div>
         </div>
@@ -214,7 +246,9 @@ export const NotificationPreferencesPage: React.FC = () => {
       {/* Info Box */}
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          💡 <strong>Consejo:</strong> Ajusta estas preferencias para recibir solo las notificaciones que necesitas. Puedes cambiarlas en cualquier momento.
+          💡 <strong>Consejo:</strong> Ajusta estas preferencias para recibir
+          solo las notificaciones que necesitas. Puedes cambiarlas en cualquier
+          momento.
         </p>
       </div>
     </div>
