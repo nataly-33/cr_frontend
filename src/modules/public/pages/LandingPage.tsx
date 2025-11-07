@@ -40,7 +40,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-600 to-green-900 text-white">
+      <section className="bg-gradient-to-r from-green-800 to-green-900 text-white">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Clinic Records</h1>
           <Link
@@ -271,7 +271,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-green-600 text-white">
+      <section className="py-20 bg-green-800 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             ¿Listo para digitalizar tu clínica?
