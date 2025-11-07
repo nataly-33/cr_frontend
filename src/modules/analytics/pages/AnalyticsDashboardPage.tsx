@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { FaUsers, FaFileAlt, FaClipboardList, FaFire } from 'react-icons/fa';
+import { AlertCircle, RefreshCw, Users, FileText, ClipboardList, Flame } from 'lucide-react';
 import { analyticsService, type AnalyticsData } from '../services';
 import { SimpleLineChart } from '@/shared/components/charts/LineChartComponent';
 import { SimpleBarChart } from '@/shared/components/charts/BarChartComponent';
@@ -129,7 +128,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FaUsers className="text-2xl text-blue-600" />
+                <Users className="text-2xl text-blue-600" />
               </div>
             </div>
           </Card>
@@ -147,7 +146,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <FaFileAlt className="text-2xl text-green-600" />
+                <FileText className="text-2xl text-green-600" />
               </div>
             </div>
           </Card>
@@ -165,7 +164,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <FaClipboardList className="text-2xl text-purple-600" />
+                <ClipboardList className="text-2xl text-purple-600" />
               </div>
             </div>
           </Card>
@@ -181,7 +180,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 <p className="text-sm text-blue-600 mt-2">acciones registradas</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <FaFire className="text-2xl text-yellow-600" />
+                <Flame className="text-2xl text-yellow-600" />
               </div>
             </div>
           </Card>

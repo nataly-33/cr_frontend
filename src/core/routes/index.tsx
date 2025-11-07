@@ -19,6 +19,7 @@ import { PatientDetailPage } from "@modules/patients/pages/PatientDetailPage";
 import {
   ClinicalRecordDetailPage,
   ClinicalRecordFormPage,
+  ClinicalRecordsListPage,
 } from "@modules/clinical-records/pages";
 import {
   DocumentsListPage,
@@ -34,7 +35,17 @@ import {
 import { ReportsPage, ReportViewerPage } from "@modules/reports/pages";
 import {
   ClinicalFormsListPage,
+  ClinicalFormDetailPage,
+  ClinicalFormViewPage,
+  FormTypeSelectorPage,
   TriageFormPage,
+  ConsultationFormPage,
+  PrescriptionFormPage,
+  LabOrderFormPage,
+  ImagingOrderFormPage,
+  ProcedureFormPage,
+  DischargeFormPage,
+  ReferralFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
 import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modules/notifications";
@@ -64,6 +75,7 @@ export const AppRoutes = () => {
         <Route path="/patients/:id/edit" element={<PatientFormPage />} />
 
         {/* Clinical records */}
+        <Route path="/clinical-records" element={<ClinicalRecordsListPage />} />
         <Route
           path="/clinical-records/new"
           element={<ClinicalRecordFormPage />}
@@ -84,10 +96,48 @@ export const AppRoutes = () => {
 
         {/* Clinical forms */}
         <Route path="/clinical-forms" element={<ClinicalFormsListPage />} />
+        <Route path="/clinical-forms/:id" element={<ClinicalFormViewPage />} />
+        <Route path="/clinical-forms/:id/edit" element={<ClinicalFormDetailPage />} />
+        <Route path="/clinical-forms/new" element={<FormTypeSelectorPage />} />
         <Route path="/clinical-forms/triage/new" element={<TriageFormPage />} />
         <Route
           path="/clinical-forms/triage/:id/edit"
           element={<TriageFormPage />}
+        />
+        <Route path="/clinical-forms/consultation/new" element={<ConsultationFormPage />} />
+        <Route
+          path="/clinical-forms/consultation/:id/edit"
+          element={<ConsultationFormPage />}
+        />
+        <Route path="/clinical-forms/prescription/new" element={<PrescriptionFormPage />} />
+        <Route
+          path="/clinical-forms/prescription/:id/edit"
+          element={<PrescriptionFormPage />}
+        />
+        <Route path="/clinical-forms/lab-order/new" element={<LabOrderFormPage />} />
+        <Route
+          path="/clinical-forms/lab-order/:id/edit"
+          element={<LabOrderFormPage />}
+        />
+        <Route path="/clinical-forms/imaging-order/new" element={<ImagingOrderFormPage />} />
+        <Route
+          path="/clinical-forms/imaging-order/:id/edit"
+          element={<ImagingOrderFormPage />}
+        />
+        <Route path="/clinical-forms/procedure/new" element={<ProcedureFormPage />} />
+        <Route
+          path="/clinical-forms/procedure/:id/edit"
+          element={<ProcedureFormPage />}
+        />
+        <Route path="/clinical-forms/discharge/new" element={<DischargeFormPage />} />
+        <Route
+          path="/clinical-forms/discharge/:id/edit"
+          element={<DischargeFormPage />}
+        />
+        <Route path="/clinical-forms/referral/new" element={<ReferralFormPage />} />
+        <Route
+          path="/clinical-forms/referral/:id/edit"
+          element={<ReferralFormPage />}
         />
 
         {/* Users */}

@@ -13,7 +13,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { NotificationCenter } from "../../../modules/notifications/components/NotificationCenter";
+import { NotificationCenter } from "@/modules/notifications/components/NotificationCenter";
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -26,12 +26,21 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const menuItems = [
-    { icon: Home, label: t("navigation.dashboard"), path: "/dashboard" },
-    { icon: UserCog, label: t("navigation.users"), path: "/users" },
-    { icon: Shield, label: t("navigation.roles"), path: "/roles" },
-    { icon: Users, label: t("navigation.patients"), path: "/patients" },
-    { icon: FileText, label: t("navigation.documents"), path: "/documents" },
-    { icon: BarChart3, label: t("navigation.reports"), path: "/reports" },
+    { icon: Home, label: t('navigation.dashboard'), path: "/dashboard" },
+    { icon: UserCog, label: t('navigation.users'), path: "/users" },
+    { icon: Shield, label: t('navigation.roles'), path: "/roles" },
+    { icon: Users, label: t('navigation.patients'), path: "/patients" },
+    {
+      icon: FileText,
+      label: "Historias Clínicas",
+      path: "/clinical-records",
+      submenu: [
+        { label: "Mis historias", path: "/clinical-records" },
+        { label: "Formularios clínicos", path: "/clinical-forms" },
+      ],
+    },
+    { icon: FileText, label: t('navigation.documents'), path: "/documents" },
+    { icon: BarChart3, label: t('navigation.reports'), path: "/reports" },
     {
       icon: Bell,
       label: "Notificaciones",

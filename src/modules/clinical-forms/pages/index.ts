@@ -1,2 +1,12 @@
 export { ClinicalFormsListPage } from "./ClinicalFormsListPage";
+export { ClinicalFormDetailPage } from "./ClinicalFormDetailPage";
+export { ClinicalFormViewPage } from "./ClinicalFormViewPage";
+export { FormTypeSelectorPage } from "./FormTypeSelectorPage";
 export { TriageFormPage } from "./TriageFormPage";
+export { ConsultationFormPage } from "./ConsultationFormPage";
+export { PrescriptionFormPage } from "./PrescriptionFormPage";
+export { LabOrderFormPage } from "./LabOrderFormPage";
+export { ImagingOrderFormPage } from "./ImagingOrderFormPage";
+export { ProcedureFormPage } from "./ProcedureFormPage";
+export { DischargeFormPage } from "./DischargeFormPage";
+export { ReferralFormPage } from "./ReferralFormPage";
