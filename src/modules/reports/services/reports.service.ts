@@ -23,6 +23,22 @@ interface GetExecutionsParams {
 
 export const reportsService = {
   /**
+   * Get available report types
+   */
+  getAvailableTypes: async (): Promise<{
+    report_types: Array<{ value: string; label: string }>;
+    output_formats: Array<{ value: string; label: string }>;
+    description: string;
+  }> => {
+    const response = await apiService.get<{
+      report_types: Array<{ value: string; label: string }>;
+      output_formats: Array<{ value: string; label: string }>;
+      description: string;
+    }>(ENDPOINTS.REPORTS.AVAILABLE_TYPES);
+    return response.data;
+  },
+
+  /**
    * Get all report templates
    */
   getTemplates: async (): Promise<ReportTemplate[]> => {

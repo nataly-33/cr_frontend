@@ -2,6 +2,7 @@ import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield, Bell, Chev
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { NotificationCenter } from "@/modules/notifications/components/NotificationCenter";
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -13,6 +14,15 @@ export const Sidebar = () => {
     { icon: UserCog, label: t('navigation.users'), path: "/users" },
     { icon: Shield, label: t('navigation.roles'), path: "/roles" },
     { icon: Users, label: t('navigation.patients'), path: "/patients" },
+    {
+      icon: FileText,
+      label: "Historias Clínicas",
+      path: "/clinical-records",
+      submenu: [
+        { label: "Mis historias", path: "/clinical-records" },
+        { label: "Formularios clínicos", path: "/clinical-forms" },
+      ],
+    },
     { icon: FileText, label: t('navigation.documents'), path: "/documents" },
     { icon: BarChart3, label: t('navigation.reports'), path: "/reports" },
     {
