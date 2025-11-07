@@ -49,6 +49,7 @@ import {
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
 import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modules/notifications";
+import { BillingPage, PaymentHistoryPage } from "@modules/billing";
 
 export const AppRoutes = () => {
   return (
@@ -161,6 +162,10 @@ export const AppRoutes = () => {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/notifications/preferences" element={<PreferencesPage />} />
         <Route path="/notifications/send" element={<SendNotificationPage />} />
+
+        {/* Billing */}
+        <Route path="/billing" element={<BillingPage />} />
+        <Route path="/billing/payments" element={<PaymentHistoryPage />} />
       </Route>
 
       {/* Redirect for unknown routes */}

@@ -1,15 +1,4 @@
-import {
-  Home,
-  Users,
-  FileText,
-  BarChart3,
-  Settings,
-  UserCog,
-  Shield,
-  Bell,
-  ChevronDown,
-  X,
-} from "lucide-react";
+import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield, Bell, ChevronDown, CreditCard, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -51,7 +40,16 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
         { label: "Preferencias", path: "/notifications/preferences" },
       ],
     },
-    { icon: Settings, label: t("navigation.settings"), path: "/settings" },
+    {
+      icon: CreditCard,
+      label: "Facturación",
+      path: "/billing",
+      submenu: [
+        { label: "Planes", path: "/billing" },
+        { label: "Pagos", path: "/billing/payments" },
+      ],
+    },
+    { icon: Settings, label: t('navigation.settings'), path: "/settings" },
   ];
 
   const isSubmenuActive = (submenu?: Array<{ path: string }>) => {

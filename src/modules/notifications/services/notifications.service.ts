@@ -3,7 +3,6 @@ import type {
   Notification,
   NotificationPreferences,
   NotificationStats,
-  UnreadCount,
   NotificationUpdatePayload,
   NotificationType,
   NotificationStatus,
@@ -71,10 +70,18 @@ export const notificationsService = {
 
   // Obtener contador de no leídas
   getUnreadCount: async () => {
-    const response = await apiService.get<UnreadCount>(
+    const response = await apiService.get<{ unread_count: number }>(
       `${BASE_URL}/unread_count/`
     );
-    return response.data;
+    return response.data.unread_count;
+  },
+
+  // Obtener notificaciones no leídas
+  getUnreadNotifications: async () => {
+    const response = await apiService.get<PaginatedResponse<Notification>>(
+      `${BASE_URL}/?status=queued&status=sent&ordering=-created_at`
+    );
+    return response.data.results || [];
   },
 
   // Obtener estadísticas
