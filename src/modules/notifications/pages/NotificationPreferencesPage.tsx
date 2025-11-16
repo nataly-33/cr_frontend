@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Check, X } from 'lucide-react';
-import { notificationsService, type INotificationPreference } from '../services/notifications.service';
+import { notificationsService, type NotificationPreferences } from '../services';
 
 export const NotificationPreferencesPage: React.FC = () => {
-  const [preferences, setPreferences] = useState<INotificationPreference | null>(null);
+  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -39,7 +39,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     }
   };
 
-  const handleToggle = (field: keyof INotificationPreference) => {
+  const handleToggle = (field: string) => {
     if (preferences && typeof preferences[field] === 'boolean') {
       setPreferences({
         ...preferences,
@@ -48,7 +48,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     }
   };
 
-  const handleNumberChange = (field: keyof INotificationPreference, value: number) => {
+  const handleNumberChange = (field: string, value: number) => {
     if (preferences && typeof preferences[field] === 'number') {
       setPreferences({
         ...preferences,

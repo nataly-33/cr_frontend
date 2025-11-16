@@ -1,1 +1,2 @@
-export { notificationsService, type INotification, type INotificationPreference } from './notifications.service';
+export { notificationsService } from './notifications.service';
+export type { Notification, NotificationPreferences } from '../types';

@@ -12,8 +12,8 @@ export const NotificationBell = () => {
   // Cargar contador de no leídas
   const loadUnreadCount = async () => {
     try {
-      const data = await notificationsService.getUnreadCount();
-      setUnreadCount(data.unread_count);
+      const unreadCount = await notificationsService.getUnreadCount();
+      setUnreadCount(unreadCount);
     } catch (error) {
       console.error("Error loading unread count:", error);
     }
