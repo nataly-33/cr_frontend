@@ -38,7 +38,14 @@ export interface NotificationPreferences {
   quiet_hours_from: string;
   quiet_hours_to: string;
   email_digest_enabled: boolean;
+  document_uploaded_email: boolean;
+  record_created_email: boolean;
+  record_updated_email: boolean;
+  access_granted_email: boolean;
+  comment_added_email: boolean;
+  max_emails_per_day: number;
   updated_at: string;
+  [key: string]: any;
 }
 
 export interface NotificationStats {

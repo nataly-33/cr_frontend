@@ -8,9 +8,9 @@ export const API_CONFIG = {
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/login/",
-    LOGOUT: "/logout/",
-    REFRESH: "/refresh/",
+    LOGIN: "/auth/login/",
+    LOGOUT: "/auth/logout/",
+    REFRESH: "/auth/refresh/",
     ME: "/users/me/",
   },
   DASHBOARD: {
