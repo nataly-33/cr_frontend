@@ -25,6 +25,7 @@ import {
   DocumentsListPage,
   DocumentUploadPage,
   DocumentViewerPage,
+  DocumentEditPage,
 } from "@modules/documents/pages";
 import {
   UsersListPage,
@@ -48,7 +49,11 @@ import {
   ReferralFormPage,
 } from "@modules/clinical-forms/pages";
 import { SettingsPage } from "@modules/settings/pages";
-import { NotificationsPage, PreferencesPage, SendNotificationPage } from "@modules/notifications";
+import {
+  NotificationsPage,
+  PreferencesPage,
+  SendNotificationPage,
+} from "@modules/notifications";
 import { BillingPage, PaymentHistoryPage } from "@modules/billing";
 
 export const AppRoutes = () => {
@@ -94,48 +99,73 @@ export const AppRoutes = () => {
         <Route path="/documents" element={<DocumentsListPage />} />
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
         <Route path="/documents/:id" element={<DocumentViewerPage />} />
+        <Route path="/documents/:id/edit" element={<DocumentEditPage />} />
 
         {/* Clinical forms */}
         <Route path="/clinical-forms" element={<ClinicalFormsListPage />} />
         <Route path="/clinical-forms/:id" element={<ClinicalFormViewPage />} />
-        <Route path="/clinical-forms/:id/edit" element={<ClinicalFormDetailPage />} />
+        <Route
+          path="/clinical-forms/:id/edit"
+          element={<ClinicalFormDetailPage />}
+        />
         <Route path="/clinical-forms/new" element={<FormTypeSelectorPage />} />
         <Route path="/clinical-forms/triage/new" element={<TriageFormPage />} />
         <Route
           path="/clinical-forms/triage/:id/edit"
           element={<TriageFormPage />}
         />
-        <Route path="/clinical-forms/consultation/new" element={<ConsultationFormPage />} />
+        <Route
+          path="/clinical-forms/consultation/new"
+          element={<ConsultationFormPage />}
+        />
         <Route
           path="/clinical-forms/consultation/:id/edit"
           element={<ConsultationFormPage />}
         />
-        <Route path="/clinical-forms/prescription/new" element={<PrescriptionFormPage />} />
+        <Route
+          path="/clinical-forms/prescription/new"
+          element={<PrescriptionFormPage />}
+        />
         <Route
           path="/clinical-forms/prescription/:id/edit"
           element={<PrescriptionFormPage />}
         />
-        <Route path="/clinical-forms/lab-order/new" element={<LabOrderFormPage />} />
+        <Route
+          path="/clinical-forms/lab-order/new"
+          element={<LabOrderFormPage />}
+        />
         <Route
           path="/clinical-forms/lab-order/:id/edit"
           element={<LabOrderFormPage />}
         />
-        <Route path="/clinical-forms/imaging-order/new" element={<ImagingOrderFormPage />} />
+        <Route
+          path="/clinical-forms/imaging-order/new"
+          element={<ImagingOrderFormPage />}
+        />
         <Route
           path="/clinical-forms/imaging-order/:id/edit"
           element={<ImagingOrderFormPage />}
         />
-        <Route path="/clinical-forms/procedure/new" element={<ProcedureFormPage />} />
+        <Route
+          path="/clinical-forms/procedure/new"
+          element={<ProcedureFormPage />}
+        />
         <Route
           path="/clinical-forms/procedure/:id/edit"
           element={<ProcedureFormPage />}
         />
-        <Route path="/clinical-forms/discharge/new" element={<DischargeFormPage />} />
+        <Route
+          path="/clinical-forms/discharge/new"
+          element={<DischargeFormPage />}
+        />
         <Route
           path="/clinical-forms/discharge/:id/edit"
           element={<DischargeFormPage />}
         />
-        <Route path="/clinical-forms/referral/new" element={<ReferralFormPage />} />
+        <Route
+          path="/clinical-forms/referral/new"
+          element={<ReferralFormPage />}
+        />
         <Route
           path="/clinical-forms/referral/:id/edit"
           element={<ReferralFormPage />}
@@ -160,7 +190,10 @@ export const AppRoutes = () => {
 
         {/* Notificaciones */}
         <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/notifications/preferences" element={<PreferencesPage />} />
+        <Route
+          path="/notifications/preferences"
+          element={<PreferencesPage />}
+        />
         <Route path="/notifications/send" element={<SendNotificationPage />} />
 
         {/* Billing */}

@@ -3,6 +3,7 @@ import type {
   Notification,
   NotificationPreferences,
   NotificationStats,
+  UnreadCount,
   NotificationUpdatePayload,
   NotificationType,
   NotificationStatus,
@@ -25,12 +26,15 @@ export const notificationsService = {
   getAll: async (params?: GetNotificationsParams) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
-    if (params?.page_size) queryParams.append("page_size", params.page_size.toString());
+    if (params?.page_size)
+      queryParams.append("page_size", params.page_size.toString());
     if (params?.status) queryParams.append("status", params.status);
     if (params?.type) queryParams.append("type", params.type);
     if (params?.ordering) queryParams.append("ordering", params.ordering);
 
-    const url = `${BASE_URL}/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const url = `${BASE_URL}/${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
     const response = await apiService.get<PaginatedResponse<Notification>>(url);
     return response.data;
   },
@@ -61,27 +65,29 @@ export const notificationsService = {
 
   // Marcar todas como leídas
   markAllAsRead: async () => {
-    const response = await apiService.patch<{ success: boolean; updated: number }>(
-      `${BASE_URL}/mark_all_as_read/`,
-      {}
-    );
+    const response = await apiService.patch<{
+      success: boolean;
+      updated: number;
+    }>(`${BASE_URL}/mark_all_as_read/`, {});
     return response.data;
   },
 
   // Obtener contador de no leídas
   getUnreadCount: async () => {
-    const response = await apiService.get<{ unread_count: number }>(
+    const response = await apiService.get<UnreadCount>(
       `${BASE_URL}/unread_count/`
     );
-    return response.data.unread_count;
+    return response.data;
   },
 
-  // Obtener notificaciones no leídas
+  // Obtener notificaciones no leídas (lista plana)
   getUnreadNotifications: async () => {
+    // We'll request a reasonable page_size and filter client-side by read_at === null
     const response = await apiService.get<PaginatedResponse<Notification>>(
-      `${BASE_URL}/?status=queued&status=sent&ordering=-created_at`
+      `${BASE_URL}/?page_size=50`
     );
-    return response.data.results || [];
+    const data = response.data;
+    return (data.results || []).filter((n) => !n.read_at);
   },
 
   // Obtener estadísticas
@@ -157,3 +163,7 @@ export const notificationsService = {
     return response.data;
   },
 };
+
+// Type aliases for historical I-prefixed imports elsewhere in the codebase
+export type INotification = Notification;
+export type INotificationPreference = NotificationPreferences;

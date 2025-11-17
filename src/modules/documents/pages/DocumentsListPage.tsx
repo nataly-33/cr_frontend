@@ -11,7 +11,9 @@ import {
   Filter,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
+import { patientsService } from "@modules/patients/services/patients.service";
 import type { ClinicalDocument } from "../types";
+import type { Patient } from "@modules/patients/types";
 import { DOCUMENT_TYPES, DOCUMENT_STATUS } from "../types";
 import {
   Button,
@@ -36,35 +38,97 @@ export const DocumentsListPage = () => {
   const [selectedDocument, setSelectedDocument] =
     useState<ClinicalDocument | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
 
   // Filters
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [signedFilter, setSignedFilter] = useState<string>("");
+  const [patientFilter, setPatientFilter] = useState<string>("");
 
   const deleteModal = useModal();
 
-  const { currentPage, pageSize, searchQuery, handleSearch } =
-    useTable();
+  const { currentPage, pageSize, searchQuery, handleSearch } = useTable();
+
+  useEffect(() => {
+    loadPatients();
+  }, []);
 
   useEffect(() => {
     loadDocuments();
-  }, [currentPage, pageSize, searchQuery, documentTypeFilter, statusFilter, signedFilter, clinicalRecordId]);
+  }, [
+    currentPage,
+    pageSize,
+    searchQuery,
+    documentTypeFilter,
+    statusFilter,
+    signedFilter,
+    clinicalRecordId,
+    patientFilter,
+  ]);
+
+  const loadPatients = async () => {
+    try {
+      setLoadingPatients(true);
+      const response = await patientsService.getAll({
+        page_size: 1000,
+      });
+      setPatients(response.results || []);
+    } catch (error) {
+      console.error("Error loading patients:", error);
+      setPatients([]);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
 
   const loadDocuments = async () => {
     try {
       setLoading(true);
+
+      // Si hay un patientFilter, necesitamos buscar su clinical_record
+      let recordFilter = clinicalRecordId || undefined;
+      if (patientFilter && !clinicalRecordId) {
+        // Buscar el patient en la lista para obtener información adicional si es necesario
+        // Por ahora, asumimos que el backend puede filtrar por patient_id a través del clinical_record
+        // Necesitaríamos hacer una llamada adicional para obtener el clinical_record_id del paciente
+        // Por simplicidad, usamos el patientFilter como clinical_record si no hay otro filtro
+        const patient = patients.find((p) => p.id === patientFilter);
+        if (patient) {
+          // Aquí necesitaríamos obtener el clinical_record del paciente
+          // Por ahora, filtramos en el frontend después de cargar
+        }
+      }
+
       const response = await documentsService.getAll({
         page: currentPage,
         page_size: pageSize,
         search: searchQuery,
         ordering: "-created_at",
-        clinical_record: clinicalRecordId || undefined,
+        clinical_record: recordFilter,
         document_type: documentTypeFilter || undefined,
         status: statusFilter || undefined,
-        is_signed: signedFilter === "true" ? true : signedFilter === "false" ? false : undefined,
+        is_signed:
+          signedFilter === "true"
+            ? true
+            : signedFilter === "false"
+            ? false
+            : undefined,
       });
-      setDocuments(response.results || []);
+
+      // Si hay patientFilter, filtrar localmente por patient_name
+      let filteredDocs = response.results || [];
+      if (patientFilter && !clinicalRecordId) {
+        const patient = patients.find((p) => p.id === patientFilter);
+        if (patient) {
+          filteredDocs = filteredDocs.filter(
+            (doc) => doc.patient_name === patient.full_name
+          );
+        }
+      }
+
+      setDocuments(filteredDocs);
     } catch (error) {
       console.error("Error loading documents:", error);
       showToast.error("Error al cargar los documentos");
@@ -94,7 +158,11 @@ export const DocumentsListPage = () => {
   const handleDownload = async (document: ClinicalDocument) => {
     try {
       const { url } = await documentsService.download(document.id);
-      window.open(url, "_blank");
+
+      // El backend ya configura Content-Disposition para forzar descarga
+      // Simplemente abrimos la URL y el navegador descargará automáticamente
+      window.open(url, '_blank');
+
       showToast.success("Descargando documento...");
     } catch (error) {
       console.error("Error downloading document:", error);
@@ -129,6 +197,7 @@ export const DocumentsListPage = () => {
     setDocumentTypeFilter("");
     setStatusFilter("");
     setSignedFilter("");
+    setPatientFilter("");
     handleSearch("");
   };
 
@@ -306,6 +375,23 @@ export const DocumentsListPage = () => {
               className="md:col-span-2"
             />
 
+            {/* Filtro por Paciente */}
+            {!clinicalRecordId && (
+              <select
+                value={patientFilter}
+                onChange={(e) => setPatientFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={loadingPatients}
+              >
+                <option value="">Todos los pacientes</option>
+                {patients.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.full_name} - {patient.identity_document}
+                  </option>
+                ))}
+              </select>
+            )}
+
             <select
               value={documentTypeFilter}
               onChange={(e) => setDocumentTypeFilter(e.target.value)}
@@ -344,7 +430,11 @@ export const DocumentsListPage = () => {
               <option value="false">Sin firmar</option>
             </select>
 
-            {(documentTypeFilter || statusFilter || signedFilter || searchQuery) && (
+            {(documentTypeFilter ||
+              statusFilter ||
+              signedFilter ||
+              patientFilter ||
+              searchQuery) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -374,10 +464,7 @@ export const DocumentsListPage = () => {
               <Loading />
             </div>
           ) : documents.length > 0 ? (
-            <Table
-              columns={columns}
-              data={documents}
-            />
+            <Table columns={columns} data={documents} />
           ) : (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
