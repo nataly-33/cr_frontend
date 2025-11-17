@@ -13,6 +13,7 @@ export const ENDPOINTS = {
     REFRESH: "/refresh/",
     ME: "/users/me/",
   },
+
   USERS: {
     LIST: "/users/",
     DETAIL: (id: string) => `/users/${id}/`,
