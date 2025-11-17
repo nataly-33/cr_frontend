@@ -123,17 +123,49 @@ export const documentsService = {
   },
 
   /**
-   * Update document
+   * Update document (with optional file replacement)
    */
   update: async (
     id: string,
     data: Partial<ClinicalDocumentFormData>
   ): Promise<ClinicalDocument> => {
-    const response = await apiService.put<ClinicalDocument>(
-      `/documents/${id}/`,
-      data
-    );
-    return response.data;
+    // Si hay archivo, enviar como FormData
+    if (data.file) {
+      const formData = new FormData();
+
+      // Agregar todos los campos al FormData
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (key === 'file' && value instanceof File) {
+            formData.append('file', value);
+          } else if (key === 'tags' && Array.isArray(value)) {
+            formData.append('tags', JSON.stringify(value));
+          } else if (key === 'content' && typeof value === 'object') {
+            formData.append('content', JSON.stringify(value));
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
+      const response = await apiService.put<ClinicalDocument>(
+        `/documents/${id}/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    } else {
+      // Sin archivo, enviar JSON normal
+      const response = await apiService.put<ClinicalDocument>(
+        `/documents/${id}/`,
+        data
+      );
+      return response.data;
+    }
   },
 
   /**
@@ -144,11 +176,21 @@ export const documentsService = {
   },
 
   /**
-   * Download document (get signed URL)
+   * Download document (get signed URL with forced download)
    */
   download: async (id: string): Promise<{ url: string; file_name: string }> => {
     const response = await apiService.get<{ url: string; file_name: string }>(
       `/documents/${id}/download/`
+    );
+    return response.data;
+  },
+
+  /**
+   * View document (get signed URL for preview without forcing download)
+   */
+  view: async (id: string): Promise<{ url: string; file_name: string }> => {
+    const response = await apiService.get<{ url: string; file_name: string }>(
+      `/documents/${id}/view/`
     );
     return response.data;
   },

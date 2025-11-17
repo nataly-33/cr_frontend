@@ -17,6 +17,10 @@ import {
   User,
   Edit,
   Trash2,
+  FileSearch,
+  Copy,
+  Loader,
+  Eye,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
 import type { ClinicalDocument } from "../types";
@@ -46,6 +50,7 @@ export const DocumentViewerPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState<"viewer" | "ocr">("viewer");
 
   const deleteModal = useModal();
   const signModal = useModal();
@@ -62,18 +67,33 @@ export const DocumentViewerPage = () => {
       const doc = await documentsService.getById(id!);
       setDocument(doc);
 
-      // Obtener URL de descarga SOLO si hay archivo físico
+      console.log("Documento cargado:", doc);
+      console.log("file_path:", doc.file_path);
+      console.log("file_name:", doc.file_name);
+
+      // Obtener URL de visualización SOLO si hay archivo físico
       if (doc.file_path && doc.file_name) {
         try {
-          const { url } = await documentsService.download(id!);
-          setFileUrl(url);
+          // Usar el endpoint 'view' en lugar de 'download' para previsualización
+          const viewData = await documentsService.view(id!);
+          console.log("View data:", viewData);
+
+          // Verificar que la URL sea válida antes de establecerla
+          if (viewData.url && viewData.url.trim() !== '') {
+            setFileUrl(viewData.url);
+          } else {
+            console.warn("URL de visualización vacía o inválida");
+            showToast.warning("El archivo existe pero no se pudo generar la URL de previsualización");
+          }
         } catch (error) {
-          console.warn(
-            "No se pudo obtener URL de descarga, mostrando contenido JSON"
-          );
+          console.error("Error al obtener URL de visualización:", error);
+          showToast.error("No se pudo cargar el archivo para previsualización");
         }
+      } else {
+        console.log("No hay archivo físico, mostrando contenido JSON");
       }
     } catch (error) {
+      console.error("Error al cargar documento:", error);
       showToast.error("Error al cargar el documento");
       navigate("/documents");
     } finally {
@@ -108,8 +128,10 @@ export const DocumentViewerPage = () => {
     try {
       const { url } = await documentsService.download(id!);
 
-      // Abrir en nueva pestaña
-      window.open(url, "_blank");
+      // El backend ya configura Content-Disposition para forzar descarga
+      // Simplemente abrimos la URL y el navegador descargará automáticamente
+      window.open(url, '_blank');
+
       showToast.success("Descargando documento...");
     } catch (error) {
       showToast.error("Error al descargar el documento");
@@ -155,10 +177,18 @@ export const DocumentViewerPage = () => {
     }
   };
 
+  const handleCopyOCRText = () => {
+    if (document?.ocr_text) {
+      navigator.clipboard.writeText(document.ocr_text);
+      showToast.success("Texto copiado al portapapeles");
+    }
+  };
+
   const isPDF =
     document?.file_type === "application/pdf" ||
     document?.file_name?.endsWith(".pdf");
   const isImage = document?.file_type?.startsWith("image/");
+  const hasOCR = document?.ocr_processed && document?.ocr_text;
 
   if (loading) {
     return <Loading fullScreen text="Cargando documento..." />;
@@ -253,131 +283,290 @@ export const DocumentViewerPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Visor de Documento */}
           <div className="lg:col-span-2">
-            <Card padding={false}>
-              {/* Controles del Visor */}
-              {isPDF && fileUrl && (
-                <div className="bg-gray-100 border-b px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handlePreviousPage}
-                      disabled={pageNumber <= 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-gray-600">
-                      Página {pageNumber} de {numPages}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={pageNumber >= numPages}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {/* Tab Navigation - Solo si hay OCR */}
+            {hasOCR && (
+              <div className="flex border-b border-gray-200 bg-white mb-4 rounded-t-lg">
+                <button
+                  onClick={() => setActiveTab("viewer")}
+                  className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+                    activeTab === "viewer"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  <Eye className="inline-block mr-2 h-4 w-4" />
+                  Visor de Documento
+                </button>
+                <button
+                  onClick={() => setActiveTab("ocr")}
+                  className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+                    activeTab === "ocr"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  <FileSearch className="inline-block mr-2 h-4 w-4" />
+                  Texto Extraído (OCR)
+                </button>
+              </div>
+            )}
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleZoomOut}
-                      disabled={scale <= 0.5}
-                    >
-                      <ZoomOut className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-gray-600 min-w-[60px] text-center">
-                      {Math.round(scale * 100)}%
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleZoomIn}
-                      disabled={scale >= 3.0}
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
+            {/* Documento Viewer Tab */}
+            {activeTab === "viewer" && (
+              <Card padding={false}>
+                {/* Controles del Visor */}
+                {isPDF && fileUrl && (
+                  <div className="bg-gray-100 border-b px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handlePreviousPage}
+                        disabled={pageNumber <= 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-gray-600">
+                        Página {pageNumber} de {numPages}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleNextPage}
+                        disabled={pageNumber >= numPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleZoomOut}
+                        disabled={scale <= 0.5}
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-gray-600 min-w-[60px] text-center">
+                        {Math.round(scale * 100)}%
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleZoomIn}
+                        disabled={scale >= 3.0}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Contenido */}
+                <div className="p-4 bg-gray-50">
+                  <div
+                    className="bg-white shadow-lg mx-auto"
+                    style={{ maxWidth: "fit-content" }}
+                  >
+                    {isPDF && fileUrl ? (
+                      <Document
+                        file={fileUrl}
+                        onLoadSuccess={onDocumentLoadSuccess}
+                        loading={
+                          <div className="flex items-center justify-center h-96">
+                            <Loading />
+                          </div>
+                        }
+                        error={
+                          <div className="flex flex-col items-center justify-center h-96 text-red-600">
+                            <FileText className="h-12 w-12 mb-4" />
+                            <p>Error al cargar el documento PDF</p>
+                          </div>
+                        }
+                      >
+                        <Page
+                          pageNumber={pageNumber}
+                          scale={scale}
+                          renderTextLayer={true}
+                          renderAnnotationLayer={true}
+                        />
+                      </Document>
+                    ) : isImage && fileUrl ? (
+                      <div className="p-4">
+                        <img
+                          src={fileUrl}
+                          alt={document.title}
+                          className="max-w-full h-auto"
+                          style={{
+                            transform: `scale(${scale})`,
+                            transformOrigin: "top left",
+                          }}
+                        />
+                      </div>
+                    ) : document.content &&
+                      Object.keys(document.content).length > 0 ? (
+                      // Mostrar contenido estructurado (JSON)
+                      <div className="p-8 max-w-4xl">
+                        <DocumentContentViewer
+                          content={document.content}
+                          documentType={document.document_type}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-96 text-gray-500">
+                        <FileText className="h-12 w-12 mb-4" />
+                        <p className="font-medium mb-2">
+                          Vista previa no disponible
+                        </p>
+                        <p className="text-sm">
+                          {document.file_path
+                            ? "Descarga el archivo para verlo"
+                            : "Este documento no tiene contenido disponible"}
+                        </p>
+                        {document.file_path && (
+                          <Button
+                            className="mt-4"
+                            leftIcon={<Download className="h-4 w-4" />}
+                            onClick={handleDownload}
+                          >
+                            Descargar Archivo
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
+              </Card>
+            )}
 
-              {/* Contenido */}
-              <div className="p-4 bg-gray-50">
-                <div
-                  className="bg-white shadow-lg mx-auto"
-                  style={{ maxWidth: "fit-content" }}
-                >
-                  {isPDF && fileUrl ? (
-                    <Document
-                      file={fileUrl}
-                      onLoadSuccess={onDocumentLoadSuccess}
-                      loading={
-                        <div className="flex items-center justify-center h-96">
-                          <Loading />
-                        </div>
-                      }
-                      error={
-                        <div className="flex flex-col items-center justify-center h-96 text-red-600">
-                          <FileText className="h-12 w-12 mb-4" />
-                          <p>Error al cargar el documento PDF</p>
-                        </div>
-                      }
-                    >
-                      <Page
-                        pageNumber={pageNumber}
-                        scale={scale}
-                        renderTextLayer={true}
-                        renderAnnotationLayer={true}
-                      />
-                    </Document>
-                  ) : isImage && fileUrl ? (
-                    <div className="p-4">
-                      <img
-                        src={fileUrl}
-                        alt={document.title}
-                        className="max-w-full h-auto"
-                        style={{
-                          transform: `scale(${scale})`,
-                          transformOrigin: "top left",
-                        }}
-                      />
-                    </div>
-                  ) : document.content &&
-                    Object.keys(document.content).length > 0 ? (
-                    // Mostrar contenido estructurado (JSON)
-                    <div className="p-8 max-w-4xl">
-                      <DocumentContentViewer
-                        content={document.content}
-                        documentType={document.document_type}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-96 text-gray-500">
-                      <FileText className="h-12 w-12 mb-4" />
-                      <p className="font-medium mb-2">
-                        Vista previa no disponible
-                      </p>
-                      <p className="text-sm">
-                        {document.file_path
-                          ? "Descarga el archivo para verlo"
-                          : "Este documento no tiene contenido disponible"}
-                      </p>
-                      {document.file_path && (
-                        <Button
-                          className="mt-4"
-                          leftIcon={<Download className="h-4 w-4" />}
-                          onClick={handleDownload}
-                        >
-                          Descargar Archivo
-                        </Button>
+            {/* OCR Text Viewer Tab */}
+            {activeTab === "ocr" && (
+              <Card>
+                <CardHeader title="Texto Extraído por OCR" />
+
+                {/* OCR Status */}
+                {document.ocr_status && (
+                  <div className="mb-4 p-3 rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        Estado del procesamiento:
+                      </span>
+                      {document.ocr_status === "processing" ||
+                      document.ocr_status === "async_processing" ? (
+                        <span className="flex items-center text-sm text-blue-600">
+                          <Loader className="h-4 w-4 mr-1 animate-spin" />
+                          Procesando...
+                        </span>
+                      ) : document.ocr_status === "completed" ? (
+                        <span className="text-sm text-green-600 font-medium">
+                          ✓ Completado
+                        </span>
+                      ) : document.ocr_status === "failed" ? (
+                        <span className="text-sm text-red-600 font-medium">
+                          ✗ Error
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-500">Pendiente</span>
                       )}
                     </div>
-                  )}
-                </div>
-              </div>
-            </Card>
+
+                    {/* Confidence Score */}
+                    {document.ocr_confidence &&
+                      document.ocr_status === "completed" && (
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-gray-600">
+                              Confianza del OCR:
+                            </span>
+                            <span className="text-xs font-medium text-gray-800">
+                              {Math.round(
+                                parseFloat(document.ocr_confidence.toString())
+                              )}
+                              %
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                parseFloat(
+                                  document.ocr_confidence.toString()
+                                ) >= 80
+                                  ? "bg-green-500"
+                                  : parseFloat(
+                                      document.ocr_confidence.toString()
+                                    ) >= 60
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  parseFloat(document.ocr_confidence.toString())
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                )}
+
+                {/* OCR Text Content */}
+                {document.ocr_text ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-gray-700">
+                        Texto extraído:
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        leftIcon={<Copy className="h-4 w-4" />}
+                        onClick={handleCopyOCRText}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4 max-h-96 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800">
+                        {document.ocr_text}
+                      </pre>
+                    </div>
+                  </div>
+                ) : document.ocr_status === "failed" ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                    <FileSearch className="h-12 w-12 mb-4 text-red-400" />
+                    <p className="font-medium text-red-600 mb-2">
+                      Error al procesar el documento
+                    </p>
+                    <p className="text-sm text-center">
+                      No se pudo extraer el texto de este documento. Por favor,
+                      intenta subirlo nuevamente.
+                    </p>
+                  </div>
+                ) : document.ocr_status === "processing" ||
+                  document.ocr_status === "async_processing" ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                    <Loader className="h-12 w-12 mb-4 text-blue-500 animate-spin" />
+                    <p className="font-medium mb-2">Procesando documento...</p>
+                    <p className="text-sm text-center">
+                      El texto se está extrayendo del documento. Esto puede
+                      tomar unos momentos.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                    <FileSearch className="h-12 w-12 mb-4" />
+                    <p className="font-medium mb-2">OCR no disponible</p>
+                    <p className="text-sm text-center">
+                      Este documento aún no ha sido procesado para extracción de
+                      texto.
+                    </p>
+                  </div>
+                )}
+              </Card>
+            )}
           </div>
 
           {/* Panel de Información */}

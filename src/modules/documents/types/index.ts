@@ -25,6 +25,16 @@ export interface ClinicalDocument {
   signature?: string;
   extracted_text?: string;
   ocr_confidence?: number;
+  // Campos OCR
+  ocr_text?: string;
+  ocr_processed: boolean;
+  ocr_status?:
+    | "pending"
+    | "processing"
+    | "async_processing"
+    | "completed"
+    | "failed";
+  ocr_job_id?: string;
   uploaded_by: string;
   uploaded_by_name?: string;
   created_at: string;
