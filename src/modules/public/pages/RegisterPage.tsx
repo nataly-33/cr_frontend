@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { publicApiService } from "../services/public.service";
 import type { TenantRegistrationRequest } from "../types";
 
 export const RegisterPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const planId = searchParams.get("plan");
   const billingCycle = searchParams.get("cycle") || "monthly";
