@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   SubscriptionPlan,
   TenantRegistrationRequest,
@@ -11,7 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // Instancia de axios SIN autenticación para APIs públicas
 const publicApi = axios.create({
-  baseURL: `${API_URL}/tenants/public`,
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,7 +21,9 @@ const publicApi = axios.create({
 export const publicApiService = {
   // Obtener planes disponibles
   async getPlans(): Promise<SubscriptionPlan[]> {
-    const response = await publicApi.get<{ results: SubscriptionPlan[] }>("/plans/");
+    const response = await publicApi.get<{ results: SubscriptionPlan[] }>(
+      ENDPOINTS.TENANTS.PUBLIC.PLANS
+    );
     // Django REST Framework devuelve {results: [...]} cuando usa paginación
     return response.data.results || response.data;
   },
@@ -30,7 +33,7 @@ export const publicApiService = {
     data: TenantRegistrationRequest
   ): Promise<TenantRegistrationResponse> {
     const response = await publicApi.post<TenantRegistrationResponse>(
-      "/register/",
+      ENDPOINTS.TENANTS.PUBLIC.REGISTER,
       data
     );
     return response.data;
@@ -41,7 +44,7 @@ export const publicApiService = {
     registrationId: number
   ): Promise<{ status: string; message: string }> {
     const response = await publicApi.post(
-      `/registrations/${registrationId}/simulate-payment/`
+      ENDPOINTS.TENANTS.PUBLIC.SIMULATE_PAYMENT(registrationId)
     );
     return response.data;
   },
@@ -51,7 +54,7 @@ export const publicApiService = {
     data: TenantActivationRequest
   ): Promise<TenantActivationResponse> {
     const response = await publicApi.post<TenantActivationResponse>(
-      "/activate/",
+      ENDPOINTS.TENANTS.PUBLIC.ACTIVATE,
       data
     );
     return response.data;
@@ -62,8 +65,23 @@ export const publicApiService = {
     subdomain: string
   ): Promise<{ available: boolean }> {
     const response = await publicApi.get(
-      `/check-subdomain/?subdomain=${subdomain}`
+      ENDPOINTS.TENANTS.PUBLIC.CHECK_SUBDOMAIN(subdomain)
     );
+    return response.data;
+  },
+
+  // Crear sesión de Stripe Checkout para registro público
+  async createCheckoutSession(data: {
+    registration_id: number;
+    plan_id: number;
+    billing_cycle: "monthly" | "annual";
+    tenant_name: string;
+    admin_email: string;
+  }): Promise<{ checkout_url: string; session_id: string }> {
+    const response = await publicApi.post<{
+      checkout_url: string;
+      session_id: string;
+    }>(ENDPOINTS.TENANTS.PUBLIC.CHECKOUT, data);
     return response.data;
   },
 };
