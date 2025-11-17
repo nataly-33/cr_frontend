@@ -12,8 +12,11 @@ export const NotificationBell = () => {
   // Cargar contador de no leídas
   const loadUnreadCount = async () => {
     try {
-      const unreadCount = await notificationsService.getUnreadCount();
-      setUnreadCount(unreadCount);
+      const countRes = await notificationsService.getUnreadCount();
+      // La API puede devolver un número o un objeto { unread_count: number }
+      const count =
+        typeof countRes === "number" ? countRes : countRes?.unread_count ?? 0;
+      setUnreadCount(count);
     } catch (error) {
       console.error("Error loading unread count:", error);
     }
@@ -45,7 +48,13 @@ export const NotificationBell = () => {
       // Actualizar lista local
       setNotifications(
         notifications.map((n) =>
-          n.id === id ? { ...n, status: "read" as const, read_at: new Date().toISOString() } : n
+          n.id === id
+            ? {
+                ...n,
+                status: "read" as const,
+                read_at: new Date().toISOString(),
+              }
+            : n
         )
       );
       // Actualizar contador
@@ -76,8 +85,11 @@ export const NotificationBell = () => {
   useEffect(() => {
     loadUnreadCount();
 
-    // Recargar contador cada 30 segundos
-    const interval = setInterval(loadUnreadCount, 30000);
+    // Recargar contador cada 2 minutos (120 segundos)
+    // Cuando implementes FCM/Push, esto será menos frecuente
+    // Para desarrollo: 30s, para producción con Push: 5min (300000)
+    const POLL_INTERVAL = 120000; // 2 minutos
+    const interval = setInterval(loadUnreadCount, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 
@@ -94,6 +106,15 @@ export const NotificationBell = () => {
       "appointment.reminder": "🔔 Recordatorio",
       "clinical_record.result": "📋 Resultado clínico",
       "document.uploaded": "📄 Documento",
+      "document.created": "📄 Documento creado",
+      "document.updated": "📝 Documento modificado",
+      "document.deleted": "🗑️ Documento eliminado",
+      "clinical_record.created": "📋 Historia clínica creada",
+      "clinical_record.updated": "📝 Historia actualizada",
+      "clinical_record.deleted": "🚨 Historia eliminada",
+      "clinical_form.created": "📝 Formulario creado",
+      "clinical_form.updated": "✏️ Formulario actualizado",
+      "clinical_form.deleted": "🗑️ Formulario eliminado",
       "inventory.low_stock": "⚠️ Stock bajo",
       "user.added": "👤 Usuario agregado",
       "system.alert": "⚡ Alerta del sistema",
@@ -122,7 +143,9 @@ export const NotificationBell = () => {
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Notificaciones</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Notificaciones
+            </h2>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -163,12 +186,15 @@ export const NotificationBell = () => {
                         {notification.title}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {new Date(notification.created_at).toLocaleString("es-ES", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(notification.created_at).toLocaleString(
+                          "es-ES",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
                       </p>
                     </div>
 

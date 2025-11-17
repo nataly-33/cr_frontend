@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   Notification,
   NotificationPreferences,
@@ -10,8 +11,6 @@ import type {
   NotificationChannel,
 } from "../types";
 import type { PaginatedResponse } from "@core/types";
-
-const BASE_URL = "/notifications";
 
 interface GetNotificationsParams {
   page?: number;
@@ -32,7 +31,7 @@ export const notificationsService = {
     if (params?.type) queryParams.append("type", params.type);
     if (params?.ordering) queryParams.append("ordering", params.ordering);
 
-    const url = `${BASE_URL}/${
+    const url = `${ENDPOINTS.NOTIFICATIONS.LIST}${
       queryParams.toString() ? `?${queryParams.toString()}` : ""
     }`;
     const response = await apiService.get<PaginatedResponse<Notification>>(url);
@@ -41,14 +40,16 @@ export const notificationsService = {
 
   // Obtener detalle de una notificación
   getById: async (id: string) => {
-    const response = await apiService.get<Notification>(`${BASE_URL}/${id}/`);
+    const response = await apiService.get<Notification>(
+      ENDPOINTS.NOTIFICATIONS.DETAIL(id)
+    );
     return response.data;
   },
 
   // Marcar una notificación como leída
   markAsRead: async (id: string) => {
     const response = await apiService.patch<Notification>(
-      `${BASE_URL}/${id}/read/`,
+      ENDPOINTS.NOTIFICATIONS.MARK_AS_READ(id),
       {}
     );
     return response.data;
@@ -57,7 +58,7 @@ export const notificationsService = {
   // Marcar como no leída
   markAsUnread: async (id: string) => {
     const response = await apiService.patch<Notification>(
-      `${BASE_URL}/${id}/unread/`,
+      ENDPOINTS.NOTIFICATIONS.MARK_AS_UNREAD(id),
       {}
     );
     return response.data;
@@ -68,14 +69,14 @@ export const notificationsService = {
     const response = await apiService.patch<{
       success: boolean;
       updated: number;
-    }>(`${BASE_URL}/mark_all_as_read/`, {});
+    }>(ENDPOINTS.NOTIFICATIONS.MARK_ALL_AS_READ, {});
     return response.data;
   },
 
   // Obtener contador de no leídas
   getUnreadCount: async () => {
     const response = await apiService.get<UnreadCount>(
-      `${BASE_URL}/unread_count/`
+      ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT
     );
     return response.data;
   },
@@ -84,7 +85,7 @@ export const notificationsService = {
   getUnreadNotifications: async () => {
     // We'll request a reasonable page_size and filter client-side by read_at === null
     const response = await apiService.get<PaginatedResponse<Notification>>(
-      `${BASE_URL}/?page_size=50`
+      `${ENDPOINTS.NOTIFICATIONS.LIST}?page_size=50`
     );
     const data = response.data;
     return (data.results || []).filter((n) => !n.read_at);
@@ -93,7 +94,7 @@ export const notificationsService = {
   // Obtener estadísticas
   getStats: async () => {
     const response = await apiService.get<NotificationStats>(
-      `${BASE_URL}/stats/`
+      ENDPOINTS.NOTIFICATIONS.STATS
     );
     return response.data;
   },
@@ -101,7 +102,7 @@ export const notificationsService = {
   // Obtener mis preferencias
   getPreferences: async () => {
     const response = await apiService.get<NotificationPreferences>(
-      `${BASE_URL}/preferences/`
+      ENDPOINTS.NOTIFICATIONS.PREFERENCES
     );
     return response.data;
   },
@@ -109,7 +110,7 @@ export const notificationsService = {
   // Actualizar mis preferencias
   updatePreferences: async (data: NotificationUpdatePayload) => {
     const response = await apiService.put<NotificationPreferences>(
-      `${BASE_URL}/preferences/`,
+      ENDPOINTS.NOTIFICATIONS.PREFERENCES,
       data
     );
     return response.data;
@@ -117,7 +118,7 @@ export const notificationsService = {
 
   // Eliminar una notificación
   delete: async (id: string) => {
-    await apiService.delete(`${BASE_URL}/${id}/`);
+    await apiService.delete(ENDPOINTS.NOTIFICATIONS.DETAIL(id));
   },
 
   // Enviar notificación a usuarios específicos del tenant
@@ -137,7 +138,7 @@ export const notificationsService = {
         user_id: string;
         status: string;
       }>;
-    }>(`${BASE_URL}/send/`, {
+    }>(ENDPOINTS.NOTIFICATIONS.SEND, {
       title: payload.title,
       body: payload.body,
       type: payload.type || "system.alert",
@@ -159,7 +160,7 @@ export const notificationsService = {
         full_name: string;
       }>;
       count: number;
-    }>(`${BASE_URL}/get_recipients/`);
+    }>(ENDPOINTS.NOTIFICATIONS.GET_RECIPIENTS);
     return response.data;
   },
 };
