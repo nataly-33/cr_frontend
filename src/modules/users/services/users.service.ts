@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   User,
   UserFormData,
@@ -35,7 +36,7 @@ export const usersService = {
       queryParams.append("is_active", params.is_active.toString());
 
     const response = await apiService.get<PaginatedResponse<User>>(
-      `/users/?${queryParams.toString()}`
+      `${ENDPOINTS.USERS.LIST}?${queryParams.toString()}`
     );
     return response.data;
   },
@@ -44,7 +45,7 @@ export const usersService = {
    * Get user by ID
    */
   getById: async (id: string): Promise<User> => {
-    const response = await apiService.get<User>(`/users/${id}/`);
+    const response = await apiService.get<User>(ENDPOINTS.USERS.DETAIL(id));
     return response.data;
   },
 
@@ -52,7 +53,7 @@ export const usersService = {
    * Get current user
    */
   getMe: async (): Promise<User> => {
-    const response = await apiService.get<User>("/users/me/");
+    const response = await apiService.get<User>(ENDPOINTS.USERS.ME);
     return response.data;
   },
 
@@ -60,7 +61,7 @@ export const usersService = {
    * Create new user
    */
   create: async (data: UserFormData): Promise<User> => {
-    const response = await apiService.post<User>("/users/", data);
+    const response = await apiService.post<User>(ENDPOINTS.USERS.CREATE, data);
     return response.data;
   },
 
@@ -68,7 +69,10 @@ export const usersService = {
    * Update user
    */
   update: async (id: string, data: Partial<UserFormData>): Promise<User> => {
-    const response = await apiService.put<User>(`/users/${id}/`, data);
+    const response = await apiService.put<User>(
+      ENDPOINTS.USERS.UPDATE(id),
+      data
+    );
     return response.data;
   },
 
@@ -76,7 +80,7 @@ export const usersService = {
    * Delete user
    */
   delete: async (id: string): Promise<void> => {
-    await apiService.delete(`/users/${id}/`);
+    await apiService.delete(ENDPOINTS.USERS.DELETE(id));
   },
 
   /**
@@ -84,7 +88,7 @@ export const usersService = {
    */
   toggleActive: async (id: string): Promise<User> => {
     const response = await apiService.post<User>(
-      `/users/${id}/toggle-active/`
+      ENDPOINTS.USERS.TOGGLE_ACTIVE(id)
     );
     return response.data;
   },
@@ -97,7 +101,7 @@ export const usersService = {
     data: ChangePasswordData
   ): Promise<{ message: string }> => {
     const response = await apiService.post<{ message: string }>(
-      `/users/${id}/change-password/`,
+      ENDPOINTS.USERS.CHANGE_PASSWORD(id),
       data
     );
     return response.data;
@@ -110,7 +114,7 @@ export const usersService = {
     data: UpdatePreferencesData
   ): Promise<{ message: string }> => {
     const response = await apiService.put<{ message: string }>(
-      "/users/preferences/",
+      ENDPOINTS.USERS.PREFERENCES,
       data
     );
     return response.data;
@@ -120,7 +124,9 @@ export const usersService = {
    * Get all roles
    */
   getRoles: async (): Promise<Role[]> => {
-    const response = await apiService.get<PaginatedResponse<Role>>("/roles/");
+    const response = await apiService.get<PaginatedResponse<Role>>(
+      ENDPOINTS.ROLES.LIST
+    );
     return response.data.results || response.data;
   },
 
@@ -128,7 +134,7 @@ export const usersService = {
    * Get role by ID
    */
   getRoleById: async (id: string): Promise<Role> => {
-    const response = await apiService.get<Role>(`/roles/${id}/`);
+    const response = await apiService.get<Role>(ENDPOINTS.ROLES.DETAIL(id));
     return response.data;
   },
 
@@ -136,7 +142,7 @@ export const usersService = {
    * Create role
    */
   createRole: async (data: Partial<Role>): Promise<Role> => {
-    const response = await apiService.post<Role>("/roles/", data);
+    const response = await apiService.post<Role>(ENDPOINTS.ROLES.CREATE, data);
     return response.data;
   },
 
@@ -144,7 +150,10 @@ export const usersService = {
    * Update role
    */
   updateRole: async (id: string, data: Partial<Role>): Promise<Role> => {
-    const response = await apiService.put<Role>(`/roles/${id}/`, data);
+    const response = await apiService.put<Role>(
+      ENDPOINTS.ROLES.UPDATE(id),
+      data
+    );
     return response.data;
   },
 
@@ -152,14 +161,16 @@ export const usersService = {
    * Delete role
    */
   deleteRole: async (id: string): Promise<void> => {
-    await apiService.delete(`/roles/${id}/`);
+    await apiService.delete(ENDPOINTS.ROLES.DELETE(id));
   },
 
   /**
    * Get all permissions
    */
   getPermissions: async (): Promise<Permission[]> => {
-    const response = await apiService.get<PaginatedResponse<Permission>>("/permissions/");
+    const response = await apiService.get<PaginatedResponse<Permission>>(
+      ENDPOINTS.PERMISSIONS.LIST
+    );
     return response.data.results || response.data;
   },
 };

@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   ClinicalForm,
   ClinicalFormFormData,
@@ -18,7 +19,7 @@ export const clinicalFormsService = {
     params?: ClinicalFormQueryParams
   ): Promise<PaginatedResponse<ClinicalForm>> => {
     const response = await apiService.get<PaginatedResponse<ClinicalForm>>(
-      "/clinical-records/forms/",
+      ENDPOINTS.CLINICAL_RECORDS.FORMS,
       { params }
     );
     return response.data;
@@ -29,7 +30,7 @@ export const clinicalFormsService = {
    */
   getById: async (id: string): Promise<ClinicalForm> => {
     const response = await apiService.get<ClinicalForm>(
-      `/clinical-records/forms/${id}/`
+      ENDPOINTS.CLINICAL_RECORDS.FORMS_DETAIL(id)
     );
     return response.data;
   },
@@ -39,10 +40,7 @@ export const clinicalFormsService = {
    */
   getByRecord: async (clinicalRecordId: string): Promise<ClinicalForm[]> => {
     const response = await apiService.get<ClinicalForm[]>(
-      "/clinical-records/forms/by_record/",
-      {
-        params: { clinical_record_id: clinicalRecordId },
-      }
+      ENDPOINTS.CLINICAL_RECORDS.FORMS_BY_RECORD(clinicalRecordId)
     );
     return response.data;
   },
@@ -52,10 +50,7 @@ export const clinicalFormsService = {
    */
   getByType: async (formType: string): Promise<ClinicalForm[]> => {
     const response = await apiService.get<ClinicalForm[]>(
-      "/clinical-records/forms/by_type/",
-      {
-        params: { form_type: formType },
-      }
+      ENDPOINTS.CLINICAL_RECORDS.FORMS_BY_TYPE(formType)
     );
     return response.data;
   },
@@ -65,7 +60,7 @@ export const clinicalFormsService = {
    */
   getFormTypes: async (): Promise<FormTypeOption[]> => {
     const response = await apiService.get<{ form_types: FormTypeOption[] }>(
-      "/clinical-records/forms/form_types/"
+      ENDPOINTS.CLINICAL_RECORDS.FORMS_TYPES
     );
     return response.data.form_types;
   },
@@ -75,7 +70,7 @@ export const clinicalFormsService = {
    */
   create: async (data: ClinicalFormFormData): Promise<ClinicalForm> => {
     const response = await apiService.post<ClinicalForm>(
-      "/clinical-records/forms/",
+      ENDPOINTS.CLINICAL_RECORDS.FORMS,
       data
     );
     return response.data;
@@ -89,7 +84,7 @@ export const clinicalFormsService = {
     data: Partial<ClinicalFormFormData>
   ): Promise<ClinicalForm> => {
     const response = await apiService.put<ClinicalForm>(
-      `/clinical-records/forms/${id}/`,
+      ENDPOINTS.CLINICAL_RECORDS.FORMS_DETAIL(id),
       data
     );
     return response.data;
@@ -99,6 +94,6 @@ export const clinicalFormsService = {
    * Eliminar formulario
    */
   delete: async (id: string): Promise<void> => {
-    await apiService.delete(`/clinical-records/forms/${id}/`);
+    await apiService.delete(ENDPOINTS.CLINICAL_RECORDS.FORMS_DETAIL(id));
   },
 };

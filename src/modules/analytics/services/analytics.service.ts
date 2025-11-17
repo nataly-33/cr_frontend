@@ -1,4 +1,5 @@
-import { apiService } from '@/shared/services/api.service';
+import { apiService } from "@/shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 
 export interface AnalyticsData {
   patients_by_month: PatientByMonth[];
@@ -53,10 +54,13 @@ export const analyticsService = {
    * @param months - Número de meses a mostrar (default: 12)
    * @param days - Número de días para actividad (default: 30)
    */
-  getOverview: async (months: number = 12, days: number = 30): Promise<AnalyticsData> => {
+  getOverview: async (
+    months: number = 12,
+    days: number = 30
+  ): Promise<AnalyticsData> => {
     try {
       const response = await apiService.get<AnalyticsData>(
-        `/reports/analytics/overview/?months=${months}&days=${days}`
+        `${ENDPOINTS.REPORTS.ANALYTICS.OVERVIEW}?months=${months}&days=${days}`
       );
       return response.data;
     } catch (error) {

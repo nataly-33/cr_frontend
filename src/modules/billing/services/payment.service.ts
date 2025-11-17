@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type { PaginatedResponse } from "@core/types";
 import type {
   SubscriptionPlan,
@@ -9,13 +10,11 @@ import type {
 
 export type { SubscriptionPlan, Payment, Invoice, CheckoutSessionResponse };
 
-const BASE_URL = "/payments";
-
 export const paymentService = {
   // Planes de suscripción (protegido)
   getPlans: async (): Promise<SubscriptionPlan[]> => {
     const response = await apiService.get<SubscriptionPlan[]>(
-      "/tenants/subscription-plans/"
+      ENDPOINTS.TENANTS.SUBSCRIPTION_PLANS
     );
     return response.data;
   },
@@ -27,21 +26,25 @@ export const paymentService = {
     status?: string;
   }): Promise<PaginatedResponse<Payment>> => {
     const response = await apiService.get<PaginatedResponse<Payment>>(
-      `${BASE_URL}/`,
+      ENDPOINTS.PAYMENTS.LIST,
       { params }
     );
     return response.data;
   },
 
   getPaymentById: async (id: string): Promise<Payment> => {
-    const response = await apiService.get<Payment>(`${BASE_URL}/${id}/`);
+    const response = await apiService.get<Payment>(
+      ENDPOINTS.PAYMENTS.DETAIL(id)
+    );
     return response.data;
   },
 
   // Checkout con Stripe
-  createCheckoutSession: async (planId: string): Promise<CheckoutSessionResponse> => {
+  createCheckoutSession: async (
+    planId: string
+  ): Promise<CheckoutSessionResponse> => {
     const response = await apiService.post<CheckoutSessionResponse>(
-      `${BASE_URL}/checkout/`,
+      ENDPOINTS.PAYMENTS.CHECKOUT,
       { plan_id: planId }
     );
     return response.data;
@@ -54,7 +57,7 @@ export const paymentService = {
     status?: string;
   }): Promise<PaginatedResponse<Invoice>> => {
     const response = await apiService.get<PaginatedResponse<Invoice>>(
-      `${BASE_URL}/invoices/`,
+      ENDPOINTS.PAYMENTS.INVOICES.LIST,
       { params }
     );
     return response.data;
@@ -62,7 +65,7 @@ export const paymentService = {
 
   getInvoiceById: async (id: string): Promise<Invoice> => {
     const response = await apiService.get<Invoice>(
-      `${BASE_URL}/invoices/${id}/`
+      ENDPOINTS.PAYMENTS.INVOICES.DETAIL(id)
     );
     return response.data;
   },

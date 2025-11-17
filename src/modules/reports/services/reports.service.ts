@@ -43,7 +43,7 @@ export const reportsService = {
    */
   getTemplates: async (): Promise<ReportTemplate[]> => {
     const response = await apiService.get<ReportTemplate[]>(
-      "/reports/templates/"
+      ENDPOINTS.REPORTS.TEMPLATES
     );
     return response.data;
   },
@@ -53,7 +53,7 @@ export const reportsService = {
    */
   getTemplateById: async (id: string): Promise<ReportTemplate> => {
     const response = await apiService.get<ReportTemplate>(
-      `/reports/templates/${id}/`
+      ENDPOINTS.REPORTS.TEMPLATES_DETAIL(id)
     );
     return response.data;
   },
@@ -65,7 +65,7 @@ export const reportsService = {
     data: Partial<ReportTemplate>
   ): Promise<ReportTemplate> => {
     const response = await apiService.post<ReportTemplate>(
-      "/reports/templates/",
+      ENDPOINTS.REPORTS.TEMPLATES,
       data
     );
     return response.data;
@@ -79,7 +79,7 @@ export const reportsService = {
     data: Partial<ReportTemplate>
   ): Promise<ReportTemplate> => {
     const response = await apiService.put<ReportTemplate>(
-      `/reports/templates/${id}/`,
+      ENDPOINTS.REPORTS.TEMPLATES_DETAIL(id),
       data
     );
     return response.data;
@@ -89,7 +89,7 @@ export const reportsService = {
    * Delete report template
    */
   deleteTemplate: async (id: string): Promise<void> => {
-    await apiService.delete(`/reports/templates/${id}/`);
+    await apiService.delete(ENDPOINTS.REPORTS.TEMPLATES_DETAIL(id));
   },
 
   /**
@@ -106,13 +106,12 @@ export const reportsService = {
     if (params?.report_type)
       queryParams.append("report_type", params.report_type);
     if (params?.status) queryParams.append("status", params.status);
-    if (params?.start_date)
-      queryParams.append("start_date", params.start_date);
+    if (params?.start_date) queryParams.append("start_date", params.start_date);
     if (params?.end_date) queryParams.append("end_date", params.end_date);
     if (params?.ordering) queryParams.append("ordering", params.ordering);
 
     const response = await apiService.get<PaginatedResponse<ReportExecution>>(
-      `/reports/executions/?${queryParams.toString()}`
+      `${ENDPOINTS.REPORTS.LIST}?${queryParams.toString()}`
     );
     return response.data;
   },
@@ -122,7 +121,7 @@ export const reportsService = {
    */
   getExecutionById: async (id: string): Promise<ReportExecution> => {
     const response = await apiService.get<ReportExecution>(
-      `/reports/executions/${id}/`
+      ENDPOINTS.REPORTS.DETAIL(id)
     );
     return response.data;
   },
@@ -154,10 +153,7 @@ export const reportsService = {
   /**
    * Download report file and trigger browser download
    */
-  downloadFile: async (
-    id: string,
-    filename: string
-  ): Promise<void> => {
+  downloadFile: async (id: string, filename: string): Promise<void> => {
     const blob = await reportsService.download(id);
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -174,7 +170,7 @@ export const reportsService = {
    */
   cancel: async (id: string): Promise<ReportExecution> => {
     const response = await apiService.post<ReportExecution>(
-      `/reports/executions/${id}/cancel/`
+      ENDPOINTS.REPORTS.CANCEL(id)
     );
     return response.data;
   },
@@ -183,7 +179,7 @@ export const reportsService = {
    * Delete report execution
    */
   deleteExecution: async (id: string): Promise<void> => {
-    await apiService.delete(`/reports/executions/${id}/`);
+    await apiService.delete(ENDPOINTS.REPORTS.DETAIL(id));
   },
 
   /**
@@ -200,7 +196,7 @@ export const reportsService = {
       by_type: Record<string, number>;
       by_status: Record<string, number>;
       recent_executions: ReportExecution[];
-    }>("/reports/statistics/");
+    }>(ENDPOINTS.REPORTS.STATISTICS);
     return response.data;
   },
 
@@ -211,7 +207,7 @@ export const reportsService = {
    */
   analyzeWithAI: async (reportId: string): Promise<AIAnalysisResult> => {
     const response = await apiService.post<AIAnalysisResult>(
-      `/reports/executions/${reportId}/analyze/`
+      ENDPOINTS.REPORTS.ANALYZE(reportId)
     );
     return response.data;
   },
@@ -219,10 +215,13 @@ export const reportsService = {
   /**
    * Generate AI summary for report
    */
-  generateSummary: async (reportId: string, maxLength?: number): Promise<AISummary> => {
+  generateSummary: async (
+    reportId: string,
+    maxLength?: number
+  ): Promise<AISummary> => {
     const params = maxLength ? `?max_length=${maxLength}` : "";
     const response = await apiService.post<AISummary>(
-      `/reports/executions/${reportId}/summarize/${params}`
+      `${ENDPOINTS.REPORTS.SUMMARIZE(reportId)}${params}`
     );
     return response.data;
   },
@@ -232,7 +231,7 @@ export const reportsService = {
    */
   getRecommendations: async (reportId: string): Promise<AIRecommendation[]> => {
     const response = await apiService.get<AIRecommendation[]>(
-      `/reports/executions/${reportId}/recommendations/`
+      ENDPOINTS.REPORTS.RECOMMENDATIONS(reportId)
     );
     return response.data;
   },
@@ -242,7 +241,7 @@ export const reportsService = {
    */
   getAIInsights: async (reportId: string): Promise<AIInsightsResponse> => {
     const response = await apiService.get<AIInsightsResponse>(
-      `/reports/executions/${reportId}/ai-insights/`
+      ENDPOINTS.REPORTS.AI_INSIGHTS(reportId)
     );
     return response.data;
   },

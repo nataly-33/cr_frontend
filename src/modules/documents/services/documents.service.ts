@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   ClinicalDocument,
   ClinicalDocumentFormData,
@@ -41,7 +42,7 @@ export const documentsService = {
       queryParams.append("is_signed", params.is_signed.toString());
 
     const response = await apiService.get<PaginatedResponse<ClinicalDocument>>(
-      `/documents/?${queryParams.toString()}`
+      `${ENDPOINTS.DOCUMENTS.LIST}?${queryParams.toString()}`
     );
     return response.data;
   },
@@ -51,7 +52,7 @@ export const documentsService = {
    */
   getById: async (id: string): Promise<ClinicalDocument> => {
     const response = await apiService.get<ClinicalDocument>(
-      `/documents/${id}/`
+      ENDPOINTS.DOCUMENTS.DETAIL(id)
     );
     return response.data;
   },
@@ -59,11 +60,9 @@ export const documentsService = {
   /**
    * Create document (without file)
    */
-  create: async (
-    data: ClinicalDocumentFormData
-  ): Promise<ClinicalDocument> => {
+  create: async (data: ClinicalDocumentFormData): Promise<ClinicalDocument> => {
     const response = await apiService.post<ClinicalDocument>(
-      "/documents/",
+      ENDPOINTS.DOCUMENTS.LIST,
       data
     );
     return response.data;
@@ -111,7 +110,7 @@ export const documentsService = {
     }
 
     const response = await apiService.post<DocumentUploadResponse>(
-      "/documents/upload/",
+      ENDPOINTS.DOCUMENTS.UPLOAD,
       formData,
       {
         headers: {
@@ -136,12 +135,12 @@ export const documentsService = {
       // Agregar todos los campos al FormData
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          if (key === 'file' && value instanceof File) {
-            formData.append('file', value);
-          } else if (key === 'tags' && Array.isArray(value)) {
-            formData.append('tags', JSON.stringify(value));
-          } else if (key === 'content' && typeof value === 'object') {
-            formData.append('content', JSON.stringify(value));
+          if (key === "file" && value instanceof File) {
+            formData.append("file", value);
+          } else if (key === "tags" && Array.isArray(value)) {
+            formData.append("tags", JSON.stringify(value));
+          } else if (key === "content" && typeof value === "object") {
+            formData.append("content", JSON.stringify(value));
           } else {
             formData.append(key, value.toString());
           }
@@ -149,11 +148,11 @@ export const documentsService = {
       });
 
       const response = await apiService.put<ClinicalDocument>(
-        `/documents/${id}/`,
+        ENDPOINTS.DOCUMENTS.DETAIL(id),
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -161,7 +160,7 @@ export const documentsService = {
     } else {
       // Sin archivo, enviar JSON normal
       const response = await apiService.put<ClinicalDocument>(
-        `/documents/${id}/`,
+        ENDPOINTS.DOCUMENTS.DETAIL(id),
         data
       );
       return response.data;
@@ -172,7 +171,7 @@ export const documentsService = {
    * Delete document
    */
   delete: async (id: string): Promise<void> => {
-    await apiService.delete(`/documents/${id}/`);
+    await apiService.delete(ENDPOINTS.DOCUMENTS.DETAIL(id));
   },
 
   /**
@@ -180,7 +179,7 @@ export const documentsService = {
    */
   download: async (id: string): Promise<{ url: string; file_name: string }> => {
     const response = await apiService.get<{ url: string; file_name: string }>(
-      `/documents/${id}/download/`
+      ENDPOINTS.DOCUMENTS.DOWNLOAD(id)
     );
     return response.data;
   },
@@ -190,7 +189,7 @@ export const documentsService = {
    */
   view: async (id: string): Promise<{ url: string; file_name: string }> => {
     const response = await apiService.get<{ url: string; file_name: string }>(
-      `/documents/${id}/view/`
+      ENDPOINTS.DOCUMENTS.VIEW(id)
     );
     return response.data;
   },
@@ -202,7 +201,7 @@ export const documentsService = {
     const response = await apiService.post<{
       message: string;
       signed_at: string;
-    }>(`/documents/${id}/sign/`);
+    }>(ENDPOINTS.DOCUMENTS.SIGN(id));
     return response.data;
   },
 
@@ -211,7 +210,7 @@ export const documentsService = {
    */
   getAccessLogs: async (id: string): Promise<DocumentAccessLog[]> => {
     const response = await apiService.get<DocumentAccessLog[]>(
-      `/documents/${id}/access-log/`
+      ENDPOINTS.DOCUMENTS.ACCESS_LOG(id)
     );
     return response.data;
   },

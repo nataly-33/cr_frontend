@@ -12,8 +12,10 @@ export const NotificationCenter: React.FC = () => {
 
   useEffect(() => {
     loadUnreadCount();
-    // Poll cada 30 segundos
-    const interval = setInterval(loadUnreadCount, 30000);
+    // Poll cada 2 minutos (reducido para evitar spam)
+    // Cuando implementes FCM/Push notifications, esto será menos frecuente
+    const POLL_INTERVAL = 120000; // 2 minutos
+    const interval = setInterval(loadUnreadCount, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 

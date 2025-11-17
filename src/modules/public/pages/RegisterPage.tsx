@@ -86,23 +86,40 @@ export const RegisterPage: React.FC = () => {
     setError("");
 
     try {
-      // 1. Crear registro
+      // 1. Crear registro de tenant pendiente de pago
       const registration = await publicApiService.registerTenant(formData);
 
-      // 2. Simular pago
-      await publicApiService.simulatePayment(registration.registration_id);
-
-      // 3. Redirigir a página de éxito
-      navigate("/registration-success", {
-        state: {
+      // 2. Guardar datos en localStorage para después del pago
+      sessionStorage.setItem(
+        "pendingRegistration",
+        JSON.stringify({
+          registration_id: registration.registration_id,
           email: formData.admin_email,
-          tenantName: formData.tenant_name,
-        },
+          tenant_name: formData.tenant_name,
+          subdomain: formData.subdomain,
+        })
+      );
+
+      // 3. Crear sesión de Stripe Checkout
+      const checkoutResponse = await publicApiService.createCheckoutSession({
+        registration_id: registration.registration_id,
+        plan_id: formData.plan_id,
+        billing_cycle: formData.billing_cycle,
+        tenant_name: formData.tenant_name,
+        admin_email: formData.admin_email,
       });
+
+      // 4. Redirigir a Stripe Checkout
+      if (checkoutResponse.checkout_url) {
+        window.location.href = checkoutResponse.checkout_url;
+      } else {
+        setError("No se pudo obtener la sesión de pago. Intenta nuevamente.");
+      }
     } catch (err: any) {
       console.error("Error en registro:", err);
       setError(
         err.response?.data?.message ||
+          err.response?.data?.detail ||
           err.response?.data?.subdomain?.[0] ||
           "Error en el registro. Intenta nuevamente."
       );

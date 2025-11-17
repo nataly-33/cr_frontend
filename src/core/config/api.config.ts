@@ -8,10 +8,61 @@ export const API_CONFIG = {
 
 export const ENDPOINTS = {
   AUTH: {
-    LOGIN: "/auth/login/",
-    LOGOUT: "/auth/logout/",
-    REFRESH: "/auth/refresh/",
+    LOGIN: "/login/",
+    LOGOUT: "/logout/",
+    REFRESH: "/refresh/",
     ME: "/users/me/",
+  },
+  USERS: {
+    LIST: "/users/",
+    DETAIL: (id: string) => `/users/${id}/`,
+    CREATE: "/users/",
+    UPDATE: (id: string) => `/users/${id}/`,
+    DELETE: (id: string) => `/users/${id}/`,
+    ME: "/users/me/",
+    TOGGLE_ACTIVE: (id: string) => `/users/${id}/toggle-active/`,
+    CHANGE_PASSWORD: (id: string) => `/users/${id}/change-password/`,
+    PREFERENCES: "/users/preferences/",
+    ME_PREFERENCES: "/users/me/preferences/",
+  },
+  ROLES: {
+    LIST: "/roles/",
+    DETAIL: (id: string) => `/roles/${id}/`,
+    CREATE: "/roles/",
+    UPDATE: (id: string) => `/roles/${id}/`,
+    DELETE: (id: string) => `/roles/${id}/`,
+  },
+  PERMISSIONS: {
+    LIST: "/permissions/",
+    DETAIL: (id: string) => `/permissions/${id}/`,
+    CREATE: "/permissions/",
+    UPDATE: (id: string) => `/permissions/${id}/`,
+    DELETE: (id: string) => `/permissions/${id}/`,
+  },
+  TENANTS: {
+    PUBLIC: {
+      PLANS: "/tenants/public/plans/",
+      REGISTER: "/tenants/public/register/",
+      ACTIVATE: "/tenants/public/activate/",
+      CHECKOUT: "/tenants/public/checkout/",
+      CHECK_SUBDOMAIN: (subdomain: string) =>
+        `/tenants/public/check-subdomain/?subdomain=${subdomain}`,
+      SIMULATE_PAYMENT: (registrationId: number) =>
+        `/tenants/public/registrations/${registrationId}/simulate-payment/`,
+    },
+    LIST: "/tenants/",
+    DETAIL: (id: string) => `/tenants/${id}/`,
+    SUBSCRIPTION_PLANS: "/tenants/subscription-plans/",
+  },
+  PAYMENTS: {
+    LIST: "/payments/",
+    DETAIL: (id: string) => `/payments/${id}/`,
+    CHECKOUT: "/payments/checkout/",
+    WEBHOOK: "/payments/webhook/",
+    INVOICES: {
+      LIST: "/payments/invoices/",
+      DETAIL: (id: string) => `/payments/invoices/${id}/`,
+    },
   },
   DASHBOARD: {
     OVERVIEW: "/dashboard/overview/",
@@ -36,8 +87,11 @@ export const ENDPOINTS = {
     ARCHIVE: (id: string) => `/clinical-records/${id}/archive/`,
     CLOSE: (id: string) => `/clinical-records/${id}/close/`,
     FORMS: "/clinical-records/forms/",
-    FORMS_BY_RECORD: (id: string) => `/clinical-records/forms/?clinical_record_id=${id}`,
-    FORMS_BY_TYPE: (type: string) => `/clinical-records/forms/?form_type=${type}`,
+    FORMS_DETAIL: (id: string) => `/clinical-records/forms/${id}/`,
+    FORMS_BY_RECORD: (id: string) =>
+      `/clinical-records/forms/?clinical_record_id=${id}`,
+    FORMS_BY_TYPE: (type: string) =>
+      `/clinical-records/forms/?form_type=${type}`,
     FORMS_TYPES: "/clinical-records/forms/form_types/",
   },
   DOCUMENTS: {
@@ -46,6 +100,7 @@ export const ENDPOINTS = {
     UPLOAD: "/documents/upload/",
     SEARCH: "/documents/search/",
     DOWNLOAD: (id: string) => `/documents/${id}/download/`,
+    VIEW: (id: string) => `/documents/${id}/view/`,
     SIGN: (id: string) => `/documents/${id}/sign/`,
     ACCESS_LOG: (id: string) => `/documents/${id}/access_log/`,
   },
@@ -63,19 +118,30 @@ export const ENDPOINTS = {
     LIST: "/reports/executions/",
     DETAIL: (id: string) => `/reports/executions/${id}/`,
     DOWNLOAD: (id: string) => `/reports/executions/${id}/download/`,
+    CANCEL: (id: string) => `/reports/executions/${id}/cancel/`,
     ANALYZE: (id: string) => `/reports/executions/${id}/analyze/`,
     SUMMARIZE: (id: string) => `/reports/executions/${id}/summarize/`,
-    RECOMMENDATIONS: (id: string) => `/reports/executions/${id}/recommendations/`,
+    RECOMMENDATIONS: (id: string) =>
+      `/reports/executions/${id}/recommendations/`,
     AI_INSIGHTS: (id: string) => `/reports/executions/${id}/ai_insights/`,
     TEMPLATES: "/reports/templates/",
+    TEMPLATES_DETAIL: (id: string) => `/reports/templates/${id}/`,
+    STATISTICS: "/reports/statistics/",
+    ANALYTICS: {
+      OVERVIEW: "/reports/analytics/overview/",
+    },
   },
   NOTIFICATIONS: {
     LIST: "/notifications/",
     DETAIL: (id: string) => `/notifications/${id}/`,
     MARK_AS_READ: (id: string) => `/notifications/${id}/read/`,
+    MARK_AS_UNREAD: (id: string) => `/notifications/${id}/unread/`,
     MARK_ALL_AS_READ: "/notifications/mark_all_as_read/",
     UNREAD_COUNT: "/notifications/unread_count/",
+    STATS: "/notifications/stats/",
+    PREFERENCES: "/notifications/preferences/",
     SEND: "/notifications/send/",
+    GET_RECIPIENTS: "/notifications/get_recipients/",
   },
   SEED: {
     GENERATE: "/seed/generate/",

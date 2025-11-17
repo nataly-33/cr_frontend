@@ -1,9 +1,24 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 export const RegistrationSuccessPage: React.FC = () => {
-  const location = useLocation();
-  const { email, tenantName } = location.state || {};
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  const [email, setEmail] = useState<string>("");
+  const [tenantName, setTenantName] = useState<string>("");
+
+  useEffect(() => {
+    // Obtener datos del sessionStorage
+    const pendingReg = sessionStorage.getItem("pendingRegistration");
+    if (pendingReg) {
+      const reg = JSON.parse(pendingReg);
+      setEmail(reg.email);
+      setTenantName(reg.tenant_name);
+
+      // Limpiar después de usarlos
+      sessionStorage.removeItem("pendingRegistration");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
@@ -26,11 +41,11 @@ export const RegistrationSuccessPage: React.FC = () => {
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          ¡Registro Exitoso!
+          ¡Pago Completado!
         </h2>
 
         <p className="text-gray-600 mb-6">
-          Hemos enviado un email a{" "}
+          Tu pago ha sido procesado exitosamente. Hemos enviado un email a{" "}
           <strong className="text-gray-900">{email}</strong> con las
           instrucciones para activar tu cuenta de <strong>{tenantName}</strong>.
         </p>
@@ -44,6 +59,12 @@ export const RegistrationSuccessPage: React.FC = () => {
             <li>¡Comienza a usar tu sistema!</li>
           </ol>
         </div>
+
+        {sessionId && (
+          <p className="text-xs text-gray-400 mb-4">
+            Session: {sessionId.substring(0, 20)}...
+          </p>
+        )}
 
         <div className="space-y-3">
           <Link
