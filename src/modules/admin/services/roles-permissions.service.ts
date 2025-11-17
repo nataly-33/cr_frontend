@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 
 export interface Permission {
   id: string;
@@ -61,16 +62,20 @@ export const rolesPermissionsService = {
    * Get all roles (globales + por tenant)
    */
   getAllRoles: async (): Promise<Role[]> => {
-    const response = await apiService.get<any>("/roles/");
+    const response = await apiService.get<any>(ENDPOINTS.ROLES.LIST);
     // DRF retorna paginado, extraer resultados
-    return Array.isArray(response.data) ? response.data : response.data.results || [];
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
   },
 
   /**
    * Get single role by ID
    */
   getRoleById: async (id: string): Promise<RoleDetail> => {
-    const response = await apiService.get<RoleDetail>(`/roles/${id}/`);
+    const response = await apiService.get<RoleDetail>(
+      ENDPOINTS.ROLES.DETAIL(id)
+    );
     return response.data;
   },
 
@@ -78,7 +83,7 @@ export const rolesPermissionsService = {
    * Create new role
    */
   createRole: async (data: CreateRoleData): Promise<Role> => {
-    const response = await apiService.post<Role>("/roles/", data);
+    const response = await apiService.post<Role>(ENDPOINTS.ROLES.CREATE, data);
     return response.data;
   },
 
@@ -86,7 +91,10 @@ export const rolesPermissionsService = {
    * Update role
    */
   updateRole: async (id: string, data: UpdateRoleData): Promise<Role> => {
-    const response = await apiService.put<Role>(`/roles/${id}/`, data);
+    const response = await apiService.put<Role>(
+      ENDPOINTS.ROLES.UPDATE(id),
+      data
+    );
     return response.data;
   },
 
@@ -94,7 +102,9 @@ export const rolesPermissionsService = {
    * Delete role
    */
   deleteRole: async (id: string): Promise<{ message: string }> => {
-    const response = await apiService.delete<{ message: string }>(`/roles/${id}/`);
+    const response = await apiService.delete<{ message: string }>(
+      ENDPOINTS.ROLES.DELETE(id)
+    );
     return response.data;
   },
 
@@ -102,16 +112,20 @@ export const rolesPermissionsService = {
    * Get all permissions (globales + por tenant)
    */
   getAllPermissions: async (): Promise<Permission[]> => {
-    const response = await apiService.get<any>("/permissions/");
+    const response = await apiService.get<any>(ENDPOINTS.PERMISSIONS.LIST);
     // DRF retorna paginado, extraer resultados
-    return Array.isArray(response.data) ? response.data : response.data.results || [];
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
   },
 
   /**
    * Get single permission by ID
    */
   getPermissionById: async (id: string): Promise<Permission> => {
-    const response = await apiService.get<Permission>(`/permissions/${id}/`);
+    const response = await apiService.get<Permission>(
+      ENDPOINTS.PERMISSIONS.DETAIL(id)
+    );
     return response.data;
   },
 
@@ -119,15 +133,24 @@ export const rolesPermissionsService = {
    * Create new permission
    */
   createPermission: async (data: CreatePermissionData): Promise<Permission> => {
-    const response = await apiService.post<Permission>("/permissions/", data);
+    const response = await apiService.post<Permission>(
+      ENDPOINTS.PERMISSIONS.CREATE,
+      data
+    );
     return response.data;
   },
 
   /**
    * Update permission
    */
-  updatePermission: async (id: string, data: UpdatePermissionData): Promise<Permission> => {
-    const response = await apiService.put<Permission>(`/permissions/${id}/`, data);
+  updatePermission: async (
+    id: string,
+    data: UpdatePermissionData
+  ): Promise<Permission> => {
+    const response = await apiService.put<Permission>(
+      ENDPOINTS.PERMISSIONS.UPDATE(id),
+      data
+    );
     return response.data;
   },
 
@@ -135,7 +158,9 @@ export const rolesPermissionsService = {
    * Delete permission
    */
   deletePermission: async (id: string): Promise<{ message: string }> => {
-    const response = await apiService.delete<{ message: string }>(`/permissions/${id}/`);
+    const response = await apiService.delete<{ message: string }>(
+      ENDPOINTS.PERMISSIONS.DELETE(id)
+    );
     return response.data;
   },
 };

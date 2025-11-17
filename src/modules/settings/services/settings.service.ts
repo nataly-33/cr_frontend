@@ -1,16 +1,22 @@
-import { apiService } from '../../../shared/services/api.service';
-import type { UserPreferences } from '../../../core/store/settings.store';
+import { apiService } from "../../../shared/services/api.service";
+import { ENDPOINTS } from "../../../core/config/api.config";
+import type { UserPreferences } from "../../../core/store/settings.store";
 
 class SettingsService {
-  private readonly baseUrl = '/users/preferences/';
-
   async getPreferences(): Promise<UserPreferences> {
-    const response = await apiService.get<UserPreferences>(this.baseUrl);
+    const response = await apiService.get<UserPreferences>(
+      ENDPOINTS.USERS.PREFERENCES
+    );
     return response.data;
   }
 
-  async updatePreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
-    const response = await apiService.put<UserPreferences>(this.baseUrl, preferences);
+  async updatePreferences(
+    preferences: Partial<UserPreferences>
+  ): Promise<UserPreferences> {
+    const response = await apiService.put<UserPreferences>(
+      ENDPOINTS.USERS.PREFERENCES,
+      preferences
+    );
     return response.data;
   }
 }

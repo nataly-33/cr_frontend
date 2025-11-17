@@ -54,7 +54,12 @@ import {
   PreferencesPage,
   SendNotificationPage,
 } from "@modules/notifications";
-import { BillingPage, PaymentHistoryPage } from "@modules/billing";
+import {
+  BillingPage,
+  PaymentHistoryPage,
+  CheckoutSuccessPage,
+  CheckoutCancelPage,
+} from "@modules/billing";
 
 export const AppRoutes = () => {
   return (
@@ -68,6 +73,10 @@ export const AppRoutes = () => {
         element={<RegistrationSuccessPage />}
       />
       <Route path="/login" element={<LoginPage />} />
+
+      {/* Stripe Checkout callbacks (public) */}
+      <Route path="/billing/success" element={<CheckoutSuccessPage />} />
+      <Route path="/billing/cancel" element={<CheckoutCancelPage />} />
 
       {/* Protected routes (nested approach - active) */}
       <Route element={<ProtectedRoute />}>

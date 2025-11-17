@@ -1,4 +1,5 @@
 import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS } from "@core/config/api.config";
 import type {
   ClinicalRecord,
   ClinicalRecordFormData,
@@ -30,21 +31,21 @@ export const clinicalRecordsService = {
     if (params?.patient) queryParams.append("patient", params.patient);
 
     const response = await apiService.get<PaginatedResponse<ClinicalRecord>>(
-      `/clinical-records/?${queryParams.toString()}`
+      `${ENDPOINTS.CLINICAL_RECORDS.LIST}?${queryParams.toString()}`
     );
     return response.data;
   },
 
   getById: async (id: string): Promise<ClinicalRecord> => {
     const response = await apiService.get<ClinicalRecord>(
-      `/clinical-records/${id}/`
+      ENDPOINTS.CLINICAL_RECORDS.DETAIL(id)
     );
     return response.data;
   },
 
   create: async (data: ClinicalRecordFormData): Promise<ClinicalRecord> => {
     const response = await apiService.post<ClinicalRecord>(
-      "/clinical-records/",
+      ENDPOINTS.CLINICAL_RECORDS.CREATE,
       data
     );
     return response.data;
@@ -55,33 +56,33 @@ export const clinicalRecordsService = {
     data: Partial<ClinicalRecordFormData>
   ): Promise<ClinicalRecord> => {
     const response = await apiService.put<ClinicalRecord>(
-      `/clinical-records/${id}/`,
+      ENDPOINTS.CLINICAL_RECORDS.DETAIL(id),
       data
     );
     return response.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await apiService.delete(`/clinical-records/${id}/`);
+    await apiService.delete(ENDPOINTS.CLINICAL_RECORDS.DETAIL(id));
   },
 
   getTimeline: async (id: string): Promise<TimelineEvent[]> => {
     const response = await apiService.get<TimelineEvent[]>(
-      `/clinical-records/${id}/timeline/`
+      ENDPOINTS.CLINICAL_RECORDS.TIMELINE(id)
     );
     return response.data;
   },
 
   archive: async (id: string): Promise<{ message: string; status: string }> => {
     const response = await apiService.post<{ message: string; status: string }>(
-      `/clinical-records/${id}/archive/`
+      ENDPOINTS.CLINICAL_RECORDS.ARCHIVE(id)
     );
     return response.data;
   },
 
   close: async (id: string): Promise<{ message: string; status: string }> => {
     const response = await apiService.post<{ message: string; status: string }>(
-      `/clinical-records/${id}/close/`
+      ENDPOINTS.CLINICAL_RECORDS.CLOSE(id)
     );
     return response.data;
   },
