@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -12,15 +12,21 @@
     --text-primary: 17 24 39;
     --text-secondary: 107 114 128;
     --border-color: 229 231 235;
+    /* Soft, almost-white green tint for default/light theme */
+    --accent-color: 242 253 245;
+    --accent-hover: 230 249 235;
   }
 
-  /* Dark Theme */
+  /* Dark Theme - Negro y Gris */
   .theme-dark {
-    --bg-primary: 17 24 39;
-    --bg-secondary: 31 41 55;
-    --text-primary: 243 244 246;
-    --text-secondary: 156 163 175;
-    --border-color: 55 65 81;
+    --bg-primary: 18 18 18;
+    --bg-secondary: 30 30 30;
+    --text-primary: 180 180 180;
+    --text-secondary: 100 100 100;
+    --border-color: 64 64 64;
+    /* Gray accents for dark theme */
+    --accent-color: 60 60 60;
+    --accent-hover: 160 160 160;
   }
 
   /* Blue Theme */
@@ -30,6 +36,9 @@
     --text-primary: 30 58 138;
     --text-secondary: 59 130 246;
     --border-color: 147 197 253;
+    /* Very light bluish-white accents */
+    --accent-color: 245 248 255;
+    --accent-hover: 210 240 255;
   }
 
   /* Green Theme */
@@ -39,6 +48,9 @@
     --text-primary: 20 83 45;
     --text-secondary: 34 197 94;
     --border-color: 134 239 172;
+    /* Very light greenish-white accents */
+    --accent-color: 247 255 250;
+    --accent-hover: 235 240 255;
   }
 
   /* Purple Theme */
@@ -48,6 +60,21 @@
     --text-primary: 88 28 135;
     --text-secondary: 168 85 247;
     --border-color: 216 180 254;
+    /* Very light purplish-white accents */
+    --accent-color: 251 245 255;
+    --accent-hover: 243 220 255;
+  }
+
+  /* Yellow Theme */
+  .theme-yellow {
+    --bg-primary: 254 252 232;
+    --bg-secondary: 254 249 195;
+    --text-primary: 113 63 18;
+    --text-secondary: 161 98 7;
+    --border-color: 253 224 71;
+    /* Very light yellowish-white accents */
+    --accent-color: 255 253 240;
+    --accent-hover: 255 249 220;
   }
 
   /* Font sizes */
@@ -74,8 +101,16 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors;
+    background-color: rgb(var(--accent-color));
+    /* Buttons should have visible dark text on light accents */
+    color: rgb(17 24 39);
+    @apply px-4 py-2 rounded-lg transition-colors;
   }
+
+  .btn-primary:hover {
+    background-color: rgb(var(--accent-hover));
+  }
+
   .card {
     @apply rounded-lg shadow p-6;
     background-color: rgb(var(--bg-primary));
@@ -86,5 +121,117 @@
   body {
     background-color: rgb(var(--bg-secondary));
     color: rgb(var(--text-primary));
+  }
+
+  /* Header/title should follow the theme's text-primary color */
+  header,
+  .header,
+  .app-header,
+  .site-header,
+  .brand,
+  .logo,
+  .header-title,
+  .site-title {
+    color: rgb(var(--text-primary));
+  }
+
+  /* Ensure page titles and labels inside the main content follow the theme text variables
+     so they remain legible when switching themes (dark/light/colored) */
+  main h1,
+  main h2,
+  main h3,
+  main h4,
+  main h5,
+  main h6 {
+    color: rgb(var(--text-primary));
+  }
+
+  main p,
+  main label,
+  main .form-label,
+  main .field-label {
+    color: rgb(var(--text-primary));
+  }
+
+  /* Sidebar: use theme variables for active and hover states so the highlight follows the theme
+     - active -> --accent-color
+     - hover  -> --accent-hover
+  */
+  /* Sidebar active/hover behavior:
+     - Active (bg-primary-100) should map to theme accent, but NOT in dark theme
+     - Hover always uses --accent-hover
+     - Links/buttons inside sidebar default to text-primary unless otherwise overridden
+  */
+  html:not(.theme-dark) .app-sidebar .bg-primary-100 {
+    /* when backend React code toggles bg-primary-100 for active items, override to theme accent */
+    background-color: rgb(var(--accent-color)) !important;
+    color: rgb(var(--text-primary)) !important;
+  }
+
+  /* In dark theme do not show active background by default; keep transparent and rely on hover */
+  .theme-dark .app-sidebar .bg-primary-100 {
+    background-color: transparent !important;
+    color: rgb(var(--text-primary)) !important;
+  }
+
+  /* generic group hover inside sidebar -> use accent hover */
+  .app-sidebar .group:hover {
+    background-color: rgb(var(--accent-hover));
+    color: rgb(var(--text-primary));
+  }
+
+  /* ensure links/buttons inside sidebar default to text-primary (not hardcoded gray) */
+  .app-sidebar a,
+  .app-sidebar button,
+  .app-sidebar .group {
+    color: rgb(var(--text-primary));
+  }
+
+  /* Tables and filter controls: use text-secondary for labels/cells so they remain legible
+     when the background is light (eg. white tables) or in dark theme.
+     This targets common table elements and form controls inside main content. */
+  main table,
+  main th,
+  main td,
+  main thead,
+  main tbody,
+  main .table,
+  main .table th,
+  main .table td {
+    color: rgb(var(--text-secondary));
+  }
+
+  main label,
+  main select,
+  main input,
+  main textarea,
+  main .form-label,
+  main .field-label,
+  main .filter-label,
+  main .search-input {
+    color: rgb(var(--text-secondary));
+  }
+
+  /* Botones con color de acento: aplicar solo a elementos intencionales (.btn-primary)
+     Eliminamos el estilo global para <button> para no afectar items del sidebar */
+
+  /* Dark theme: botones con fondo gris y texto blanco */
+  .theme-dark .btn-primary,
+  .theme-dark button:not(.btn-secondary):not(.btn-danger) {
+    background-color: rgb(var(--accent-color));
+    color: rgb(var(--text-primary));
+  }
+
+  .theme-dark .btn-primary:hover,
+  .theme-dark button:not(.btn-secondary):not(.btn-danger):hover {
+    background-color: rgb(var(--accent-hover));
+  }
+
+  a {
+    color: rgb(var(--text-primary));
+  }
+
+  a:hover {
+    color: rgb(var(--accent-hover));
   }
 }
