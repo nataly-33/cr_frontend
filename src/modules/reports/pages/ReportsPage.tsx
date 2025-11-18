@@ -1,484 +1,582 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { 
-  FileText, 
-  Download, 
-  Eye, 
-  Clock, 
-  CheckCircle, 
-  XCircle,
-  Zap,
-  BarChart3
-} from "lucide-react";
-import { reportsService } from "../services/reports.service";
-import { AIActionsMenu } from "../components/AIActionsMenu";
-import type { ReportExecution } from "../types";
-import { REPORT_TYPES, OUTPUT_FORMATS } from "../types";
-import {
-  Button,
-  Input,
-  Card,
-  CardHeader,
-  Badge,
-  Select,
-  Table,
-  Pagination,
-} from "@shared/components/ui";
-import { useTable } from "@shared/hooks";
-import { showToast, formatDate } from "@shared/utils";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import axios from "axios";
 
-const reportFormSchema = z.object({
-  report_type: z.string().min(1, "El tipo de reporte es requerido"),
-  output_format: z.string().min(1, "El formato de salida es requerido"),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-});
+interface Filter {
+  field: string;
+  operator: string;
+  value: string | number;
+}
 
-type ReportFormData = z.infer<typeof reportFormSchema>;
+interface ReportConfig {
+  model: string;
+  filters: Filter[];
+  fields: string[];
+  order_by: string;
+  limit: number;
+  export_format: "json" | "pdf" | "excel" | "csv";
+}
 
-// Statistics Card Component
-const StatCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  variant = "default" 
-}: { 
-  icon: any; 
-  label: string; 
-  value: string | number; 
-  variant?: "default" | "success" | "warning" | "error" 
-}) => {
-  const bgColors = {
-    default: "bg-blue-50",
-    success: "bg-green-50",
-    warning: "bg-yellow-50",
-    error: "bg-red-50",
-  };
+const MODELS = {
+  patient: {
+    name: "Pacientes",
+    fields: [
+      "identity_document_type",
+      "identity_document",
+      "first_name",
+      "last_name",
+      "date_of_birth",
+      "gender",
+      "phone",
+      "email",
+      "address",
+      "city",
+      "created_at",
+      "updated_at",
+    ],
+    filters: [
+      "first_name",
+      "last_name",
+      "email",
+      "gender",
+      "city",
+      "created_at",
+    ],
+  },
+  clinical_record: {
+    name: "Historias Clínicas",
+    fields: [
+      "record_number",
+      "status",
+      "blood_type",
+      "family_history",
+      "social_history",
+      // ⭐ CAMPOS RELACIONADOS (JOINs automáticos)
+      "patient_name",
+      "patient_document",
+      "patient_email",
+      "created_by_name",
+      "created_at",
+      "updated_at",
+    ],
+    filters: [
+      "record_number",
+      "status",
+      "blood_type",
+      "patient_name",
+      "created_at",
+    ],
+  },
+  clinical_form: {
+    name: "Formularios Clínicos",
+    fields: [
+      "form_type",
+      "doctor_name",
+      "doctor_specialty",
+      "form_date",
+      // ⭐ CAMPOS RELACIONADOS (JOINs automáticos)
+      "clinical_record_number",
+      "patient_name",
+      "patient_document",
+      "filled_by_name",
+      "created_at",
+      "updated_at",
+    ],
+    filters: [
+      "form_type",
+      "doctor_name",
+      "patient_name",
+      "form_date",
+      "created_at",
+    ],
+  },
+  document: {
+    name: "Documentos Clínicos",
+    fields: [
+      "document_type",
+      "title",
+      "description",
+      "document_date",
+      "specialty",
+      "doctor_name",
+      "doctor_license",
+      "file_name",
+      "file_size_bytes",
+      "mime_type",
+      "ocr_processed",
+      "ocr_confidence",
+      "ocr_status",
+      "is_signed",
+      "is_locked",
+      // ⭐ CAMPOS RELACIONADOS (JOINs automáticos)
+      "clinical_record_number",
+      "patient_name",
+      "patient_document",
+      "created_by_name",
+      "created_at",
+      "updated_at",
+    ],
+    filters: [
+      "document_type",
+      "patient_name",
+      "doctor_name",
+      "ocr_processed",
+      "is_signed",
+      "created_at",
+    ],
+  },
+  user: {
+    name: "Usuarios",
+    fields: [
+      "email",
+      "username",
+      "first_name",
+      "last_name",
+      "phone",
+      "gender",
+      "birth_date",
+      "professional_id",
+      "specialty",
+      "is_active",
+      "is_staff",
+      "email_verified",
+      // ⭐ CAMPO RELACIONADO (JOIN automático)
+      "tenant_name",
+      "created_at",
+      "updated_at",
+    ],
+    filters: [
+      "email",
+      "first_name",
+      "last_name",
+      "specialty",
+      "is_active",
+      "created_at",
+    ],
+  },
+  audit_log: {
+    name: "Logs de Auditoría",
+    fields: [
+      "action_type",
+      "resource_type",
+      "resource_id",
+      "resource_name",
+      // ⭐ CAMPOS RELACIONADOS (JOINs automáticos)
+      "user_email",
+      "user_name",
+      "ip_address",
+      "user_agent",
+      "request_method",
+      "request_path",
+      "response_status",
+      "timestamp",
+    ],
+    filters: ["action_type", "resource_type", "user_email", "timestamp"],
+  },
+};
 
-  const textColors = {
-    default: "text-blue-600",
-    success: "text-green-600",
-    warning: "text-yellow-600",
-    error: "text-red-600",
-  };
-
-  return (
-    <div className={`rounded-lg p-6 border border-gray-200 ${bgColors[variant]}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-        </div>
-        <div className={`p-3 rounded-lg bg-white`}>
-          <Icon className={`h-8 w-8 ${textColors[variant]}`} />
-        </div>
-      </div>
-    </div>
-  );
+const OPERATORS = {
+  equals: "Igual a",
+  contains: "Contiene",
+  starts_with: "Empieza con",
+  ends_with: "Termina con",
+  gt: "Mayor que",
+  gte: "Mayor o igual",
+  lt: "Menor que",
+  lte: "Menor o igual",
+  in: "En lista",
+  is_null: "Es nulo",
 };
 
 export const ReportsPage = () => {
-  const navigate = useNavigate();
-  const [executions, setExecutions] = useState<ReportExecution[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [generating, setGenerating] = useState(false);
-
-  const {
-    currentPage,
-    pageSize,
-    handlePageChange,
-    handlePageSizeChange,
-    getPaginationParams,
-  } = useTable({ initialPageSize: 10 });
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ReportFormData>({
-    resolver: zodResolver(reportFormSchema),
-    defaultValues: {
-      report_type: "",
-      output_format: "pdf",
-    },
+  const [config, setConfig] = useState<ReportConfig>({
+    model: "patient",
+    filters: [],
+    fields: [],
+    order_by: "-created_at",
+    limit: 100,
+    export_format: "json",
   });
 
-  useEffect(() => {
-    loadExecutions();
-  }, [currentPage, pageSize]);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<any>(null);
 
-  // Poll for report status updates
-  useEffect(() => {
-    const pendingReports = executions.filter(
-      (exec) => exec.status === "pending" || exec.status === "processing"
-    );
+  const addFilter = () => {
+    setConfig({
+      ...config,
+      filters: [
+        ...config.filters,
+        { field: "", operator: "equals", value: "" },
+      ],
+    });
+  };
 
-    if (pendingReports.length > 0) {
-      const interval = setInterval(() => {
-        loadExecutions();
-      }, 5000); // Poll every 5 seconds
+  const updateFilter = (index: number, key: keyof Filter, value: any) => {
+    const newFilters = [...config.filters];
+    newFilters[index] = { ...newFilters[index], [key]: value };
+    setConfig({ ...config, filters: newFilters });
+  };
 
-      return () => clearInterval(interval);
-    }
-  }, [executions]);
+  const removeFilter = (index: number) => {
+    setConfig({
+      ...config,
+      filters: config.filters.filter((_, i) => i !== index),
+    });
+  };
 
-  const loadExecutions = async () => {
-    try {
-      setLoadingHistory(true);
-      const params = getPaginationParams;
-      const data = await reportsService.getExecutions({
-        page: params.page,
-        page_size: params.page_size,
-        ordering: "-created_at",
+  const toggleField = (field: string) => {
+    if (config.fields.includes(field)) {
+      setConfig({
+        ...config,
+        fields: config.fields.filter((f) => f !== field),
       });
-
-      setExecutions(data.results || []);
-      setTotalItems(data.count || 0);
-      setTotalPages(Math.ceil((data.count || 0) / pageSize));
-    } catch (error) {
-      console.error("Error loading executions:", error);
-      showToast.error("Error al cargar historial de reportes");
-      setExecutions([]);
-      setTotalItems(0);
-      setTotalPages(0);
-    } finally {
-      setLoadingHistory(false);
+    } else {
+      setConfig({ ...config, fields: [...config.fields, field] });
     }
   };
 
-  // Calculate statistics
-  const stats = {
-    total: totalItems,
-    completed: executions.filter((e) => e.status === "completed").length,
-    processing: executions.filter((e) => e.status === "processing" || e.status === "pending").length,
-    failed: executions.filter((e) => e.status === "failed").length,
-  };
-
-  const onSubmit = async (data: ReportFormData) => {
+  const generateReport = async () => {
+    setLoading(true);
     try {
-      setGenerating(true);
+      const token = localStorage.getItem("access_token");
 
-      const generateData: any = {
-        report_type: data.report_type,
-        output_format: data.output_format,
-        filters: {},
-      };
+      const response = await axios.post(
+        "http://localhost:8000/api/reports/dynamic/generate/",
+        config,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          responseType: config.export_format === "json" ? "json" : "blob",
+        }
+      );
 
-      // Add date filters if provided
-      if (data.start_date) {
-        generateData.filters.start_date = data.start_date;
+      if (config.export_format === "json") {
+        setResults(response.data);
+        toast.success("Reporte generado exitosamente");
+      } else {
+        // Descargar archivo
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+
+        // Determinar la extensión correcta del archivo
+        const fileExtension =
+          config.export_format === "excel" ? "xlsx" : config.export_format;
+        a.download = `reporte_${
+          config.model
+        }_${new Date().getTime()}.${fileExtension}`;
+
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success("Reporte descargado exitosamente");
       }
-      if (data.end_date) {
-        generateData.filters.end_date = data.end_date;
-      }
-
-      await reportsService.generate(generateData);
-      showToast.success("✨ Reporte en cola. Se procesará en segundos.");
-      
-      // Reset form
-      reset({ report_type: "", output_format: "pdf" });
-      
-      // Reload executions to show the new report
-      setTimeout(loadExecutions, 1000);
     } catch (error: any) {
       console.error("Error generating report:", error);
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        "Error al generar el reporte";
-      showToast.error(errorMessage);
+      toast.error(error.response?.data?.error || "Error al generar reporte");
     } finally {
-      setGenerating(false);
+      setLoading(false);
     }
   };
 
-  const handleDownload = async (execution: ReportExecution) => {
-    try {
-      const fileName = `${execution.report_type}_${formatDate(execution.executed_at)}.${execution.output_format}`;
-      await reportsService.downloadFile(execution.id, fileName);
-      showToast.success("Reporte descargado exitosamente");
-    } catch (error) {
-      console.error("Error downloading report:", error);
-      showToast.error("Error al descargar el reporte");
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { variant: "warning" as const, icon: Clock, label: "Pendiente" },
-      processing: { variant: "info" as const, icon: Clock, label: "Procesando" },
-      completed: { variant: "success" as const, icon: CheckCircle, label: "Completado" },
-      failed: { variant: "error" as const, icon: XCircle, label: "Fallido" },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    const Icon = config.icon;
-
-    return (
-      <Badge variant={config.variant}>
-        <div className="flex items-center gap-1">
-          <Icon className="h-3 w-3" />
-          {config.label}
-        </div>
-      </Badge>
-    );
-  };
-
-  const columns = [
-    {
-      key: "report_type",
-      label: "Tipo de Reporte",
-      render: (execution: ReportExecution) => (
-        <div className="font-medium text-gray-900">
-          {REPORT_TYPES[execution.report_type as keyof typeof REPORT_TYPES] || execution.report_type}
-        </div>
-      ),
-    },
-    {
-      key: "output_format",
-      label: "Formato",
-      render: (execution: ReportExecution) => (
-        <Badge variant="default">
-          {execution.output_format.toUpperCase()}
-        </Badge>
-      ),
-    },
-    {
-      key: "status",
-      label: "Estado",
-      render: (execution: ReportExecution) => getStatusBadge(execution.status),
-    },
-    {
-      key: "executed_at",
-      label: "Fecha de Creación",
-      render: (execution: ReportExecution) => (
-        <div className="text-sm text-gray-500">
-          {formatDate(execution.executed_at)}
-        </div>
-      ),
-    },
-    {
-      key: "executed_by_name",
-      label: "Generado por",
-      render: (execution: ReportExecution) => (
-        <div className="text-sm">{execution.executed_by_name || execution.executed_by}</div>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Acciones",
-      render: (execution: ReportExecution) => (
-        <div className="flex items-center gap-2">
-          {execution.status === "completed" && (
-            <>
-              <button
-                onClick={() => navigate(`/reports/${execution.id}`)}
-                className="text-blue-600 hover:text-blue-900 transition-colors"
-                title="Ver detalles"
-              >
-                <Eye className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleDownload(execution)}
-                className="text-green-600 hover:text-green-900 transition-colors"
-                title="Descargar"
-              >
-                <Download className="h-4 w-4" />
-              </button>
-              <AIActionsMenu execution={execution} />
-            </>
-          )}
-        </div>
-      ),
-    },
-  ];
+  const modelData = MODELS[config.model as keyof typeof MODELS];
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <BarChart3 className="h-8 w-8 text-blue-600" />
-            Reportes
-          </h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Genera y gestiona reportes de tu clínica con análisis de IA integrado
-          </p>
+    <div className="max-w-7xl mx-auto p-6">
+      <h1
+        className="text-3xl font-bold mb-6"
+        style={{ color: "rgb(var(--text-primary))" }}
+      >
+        Reportes Dinámicos
+      </h1>
+
+      <div className="card mb-6">
+        <h2 className="text-xl font-semibold mb-4">
+          Configuración del Reporte
+        </h2>
+
+        {/* Selector de Modelo */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            ¿Qué deseas reportar?
+          </label>
+          <select
+            value={config.model}
+            onChange={(e) =>
+              setConfig({
+                ...config,
+                model: e.target.value,
+                fields: [],
+                filters: [],
+              })
+            }
+            className="w-full p-3 border rounded-lg"
+            style={{
+              backgroundColor: "rgb(var(--bg-primary))",
+              color: "rgb(var(--text-primary))",
+              borderColor: "rgb(var(--border-color))",
+            }}
+          >
+            {Object.entries(MODELS).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.name}
+              </option>
+            ))}
+          </select>
         </div>
-      </div>
 
-      {/* Statistics Cards */}
-      {totalItems > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard
-            icon={FileText}
-            label="Total de Reportes"
-            value={stats.total}
-            variant="default"
-          />
-          <StatCard
-            icon={CheckCircle}
-            label="Completados"
-            value={stats.completed}
-            variant="success"
-          />
-          <StatCard
-            icon={Clock}
-            label="Procesando"
-            value={stats.processing}
-            variant="warning"
-          />
-          <StatCard
-            icon={XCircle}
-            label="Fallidos"
-            value={stats.failed}
-            variant="error"
-          />
-        </div>
-      )}
-
-      {/* Generate Report Form */}
-      <Card className="border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-blue-25">
-        <div className="p-6 lg:p-8">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-lg bg-blue-100">
-              <Zap className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <CardHeader
-                title="Generar Nuevo Reporte"
-                subtitle="Selecciona el tipo, formato y rango de fechas para tu reporte"
-              />
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="lg:col-span-1">
-                    <Select
-                      label="Tipo de Reporte *"
-                      {...register("report_type")}
-                      error={errors.report_type?.message}
-                    >
-                      <option value="">Seleccione...</option>
-                      {Object.entries(REPORT_TYPES).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-
-                  <div className="lg:col-span-1">
-                    <Select
-                      label="Formato *"
-                      {...register("output_format")}
-                      error={errors.output_format?.message}
-                    >
-                      <option value="">Seleccione...</option>
-                      {Object.entries(OUTPUT_FORMATS).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-
-                  <Input
-                    label="Fecha Inicio"
-                    type="date"
-                    {...register("start_date")}
-                    error={errors.start_date?.message}
-                  />
-
-                  <Input
-                    label="Fecha Fin"
-                    type="date"
-                    {...register("end_date")}
-                    error={errors.end_date?.message}
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    leftIcon={<FileText className="h-4 w-4" />}
-                    disabled={generating}
-                    isLoading={generating}
-                    className="px-6"
-                  >
-                    {generating ? "Generando..." : "Generar Reporte"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Report History */}
-      <Card>
-        <div className="p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <CardHeader
-                title="Historial de Reportes"
-                subtitle={`${totalItems} reportes en total`}
-              />
-            </div>
-            {loadingHistory && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                Actualizando...
-              </div>
-            )}
+        {/* Filtros */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <label className="block text-sm font-medium">Filtros</label>
+            <button
+              onClick={addFilter}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              + Agregar Filtro
+            </button>
           </div>
 
-          {executions.length > 0 ? (
-            <>
-              <Table
-                columns={columns}
-                data={executions}
-                isLoading={loadingHistory}
-                emptyMessage="No se encontraron reportes"
+          {config.filters.map((filter, index) => (
+            <div key={index} className="flex gap-3 mb-3">
+              <select
+                value={filter.field}
+                onChange={(e) => updateFilter(index, "field", e.target.value)}
+                className="flex-1 p-2 border rounded-lg"
+                style={{
+                  backgroundColor: "rgb(var(--bg-primary))",
+                  color: "rgb(var(--text-primary))",
+                  borderColor: "rgb(var(--border-color))",
+                }}
+              >
+                <option value="">Seleccionar campo</option>
+                {modelData.filters.map((field) => (
+                  <option key={field} value={field}>
+                    {field}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filter.operator}
+                onChange={(e) =>
+                  updateFilter(index, "operator", e.target.value)
+                }
+                className="flex-1 p-2 border rounded-lg"
+                style={{
+                  backgroundColor: "rgb(var(--bg-primary))",
+                  color: "rgb(var(--text-primary))",
+                  borderColor: "rgb(var(--border-color))",
+                }}
+              >
+                {Object.entries(OPERATORS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                value={filter.value}
+                onChange={(e) => updateFilter(index, "value", e.target.value)}
+                placeholder="Valor"
+                className="flex-1 p-2 border rounded-lg"
+                style={{
+                  backgroundColor: "rgb(var(--bg-primary))",
+                  color: "rgb(var(--text-primary))",
+                  borderColor: "rgb(var(--border-color))",
+                }}
               />
 
-              {totalPages > 1 && (
-                <div className="mt-6 border-t pt-6">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    pageSize={pageSize}
-                    totalItems={totalItems}
-                    onPageChange={handlePageChange}
-                    onPageSizeChange={handlePageSizeChange}
-                  />
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="py-12 text-center">
-              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No hay reportes aún</p>
-              <p className="text-gray-400 text-sm mt-2">
-                Genera tu primer reporte usando el formulario de arriba
-              </p>
+              <button
+                onClick={() => removeFilter(index)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Eliminar
+              </button>
             </div>
+          ))}
+
+          {config.filters.length === 0 && (
+            <p
+              className="text-sm"
+              style={{ color: "rgb(var(--text-secondary))" }}
+            >
+              Sin filtros. Se incluirán todos los registros.
+            </p>
           )}
         </div>
-      </Card>
 
-      {/* Quick Tips */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-        <p className="text-sm text-green-800">
-          <strong>💡 Consejo:</strong> Los reportes se procesan en segundo plano. Puedes navegar a otras secciones mientras esperas. Los reportes completados estarán disponibles para descargar y analizar con IA.
-        </p>
+        {/* Campos a incluir */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Campos a incluir
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {modelData.fields.map((field) => (
+              <label
+                key={field}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={config.fields.includes(field)}
+                  onChange={() => toggleField(field)}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{field}</span>
+              </label>
+            ))}
+          </div>
+          {config.fields.length === 0 && (
+            <p
+              className="text-sm mt-2"
+              style={{ color: "rgb(var(--text-secondary))" }}
+            >
+              Si no seleccionas campos, se incluirán todos.
+            </p>
+          )}
+        </div>
+
+        {/* Ordenamiento */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">Ordenar por</label>
+          <select
+            value={config.order_by}
+            onChange={(e) => setConfig({ ...config, order_by: e.target.value })}
+            className="w-full p-3 border rounded-lg"
+            style={{
+              backgroundColor: "rgb(var(--bg-primary))",
+              color: "rgb(var(--text-primary))",
+              borderColor: "rgb(var(--border-color))",
+            }}
+          >
+            <option value="-created_at">Más recientes primero</option>
+            <option value="created_at">Más antiguos primero</option>
+            {modelData.fields.map((field) => [
+              <option key={`${field}-asc`} value={field}>
+                {field} (A-Z)
+              </option>,
+              <option key={`${field}-desc`} value={`-${field}`}>
+                {field} (Z-A)
+              </option>,
+            ])}
+          </select>
+        </div>
+
+        {/* Límite */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Límite de registros
+          </label>
+          <input
+            type="number"
+            value={config.limit}
+            onChange={(e) =>
+              setConfig({ ...config, limit: parseInt(e.target.value) })
+            }
+            min="1"
+            max="10000"
+            className="w-full p-3 border rounded-lg"
+            style={{
+              backgroundColor: "rgb(var(--bg-primary))",
+              color: "rgb(var(--text-primary))",
+              borderColor: "rgb(var(--border-color))",
+            }}
+          />
+        </div>
+
+        {/* Formato de exportación */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Formato de exportación
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {(["json", "pdf", "excel", "csv"] as const).map((format) => (
+              <button
+                key={format}
+                onClick={() => setConfig({ ...config, export_format: format })}
+                className={`p-3 rounded-lg border-2 transition-all ${
+                  config.export_format === format
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+              >
+                <span className="text-sm font-medium uppercase">{format}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Botón Generar */}
+        <button
+          onClick={generateReport}
+          disabled={loading}
+          className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+        >
+          {loading ? "Generando..." : "Generar Reporte"}
+        </button>
       </div>
+
+      {/* Resultados */}
+      {results && config.export_format === "json" && (
+        <div className="card">
+          <h2 className="text-xl font-semibold mb-4">Resultados</h2>
+          <div className="mb-4">
+            <p
+              className="text-sm"
+              style={{ color: "rgb(var(--text-secondary))" }}
+            >
+              <strong>Total de registros:</strong>{" "}
+              {results.metadata?.total_records || results.total_records}
+            </p>
+            <p
+              className="text-sm"
+              style={{ color: "rgb(var(--text-secondary))" }}
+            >
+              <strong>Generado:</strong>{" "}
+              {new Date(
+                results.metadata?.generated_at || results.generated_at
+              ).toLocaleString()}
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  {results.fields.map((field: string) => (
+                    <th
+                      key={field}
+                      className="p-2 border text-left text-sm font-medium"
+                    >
+                      {field}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {results.data.map((row: any, index: number) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    {results.fields.map((field: string) => (
+                      <td key={field} className="p-2 border text-sm">
+                        {typeof row[field] === "object"
+                          ? JSON.stringify(row[field])
+                          : String(row[field] || "-")}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

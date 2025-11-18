@@ -161,7 +161,7 @@ export const DocumentsListPage = () => {
 
       // El backend ya configura Content-Disposition para forzar descarga
       // Simplemente abrimos la URL y el navegador descargará automáticamente
-      window.open(url, '_blank');
+      window.open(url, "_blank");
 
       showToast.success("Descargando documento...");
     } catch (error) {
@@ -209,7 +209,12 @@ export const DocumentsListPage = () => {
         <div>
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-gray-400" />
-            <span className="font-medium text-gray-900">{doc.title}</span>
+            <span
+              className="font-medium"
+              style={{ color: "rgb(var(--text-primary))" }}
+            >
+              {doc.title}
+            </span>
             {doc.is_signed && (
               <CheckCircle className="h-4 w-4 text-green-500" />
             )}
@@ -347,10 +352,13 @@ export const DocumentsListPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Documentos Cl\u00ednicos
+          <h1
+            className="text-3xl font-bold"
+            style={{ color: "rgb(var(--text-primary))" }}
+          >
+            Documentos Clinicos
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="mt-2" style={{ color: "rgb(var(--text-primary))" }}>
             {clinicalRecordId
               ? "Documentos de la historia cl\u00ednica"
               : "Gestiona todos los documentos cl\u00ednicos"}

@@ -4,11 +4,14 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { authService } from "../services/auth.service";
 import { useAuthStore } from "@core/store/auth.store";
+import { useSettingsStore } from "@core/store/settings.store";
+import { settingsService } from "@modules/settings/services/settings.service";
 import type { LoginCredentials } from "../types";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { setPreferences } = useSettingsStore();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -38,6 +41,16 @@ export const LoginPage = () => {
       };
 
       setAuth(user, response.access);
+
+      // Cargar preferencias del usuario desde el backend
+      try {
+        const preferences = await settingsService.getPreferences();
+        setPreferences(preferences);
+      } catch (error) {
+        console.error("Error al cargar preferencias:", error);
+        // Si hay error, las preferencias quedan en default (light)
+      }
+
       toast.success("¡Bienvenido!");
       navigate("/dashboard");
     } catch (error: any) {

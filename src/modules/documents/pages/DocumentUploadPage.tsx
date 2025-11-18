@@ -4,14 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDropzone } from "react-dropzone";
-import {
-  Upload,
-  FileText,
-  X,
-  ArrowLeft,
-  Save,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, FileText, X, ArrowLeft, Save, FileSearch } from "lucide-react";
 import { documentsService } from "../services/documents.service";
 import { clinicalRecordsService } from "@modules/clinical-records/services/clinical-records.service";
 import type { ClinicalRecord } from "@modules/clinical-records/types";
@@ -49,6 +42,7 @@ export const DocumentUploadPage = () => {
   const [clinicalRecords, setClinicalRecords] = useState<ClinicalRecord[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [processOCR, setProcessOCR] = useState(false); // Estado para OCR automático
 
   const {
     register,
@@ -87,7 +81,7 @@ export const DocumentUploadPage = () => {
       if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
         setSelectedFile(file);
-        
+
         // Auto-generar título si está vacío
         if (!watch("title")) {
           setValue("title", file.name.replace(/\.[^/.]+$/, ""));
@@ -150,12 +144,25 @@ export const DocumentUploadPage = () => {
       setUploadProgress(30);
 
       // Subir documento
-      await documentsService.upload(formData);
+      const uploadedDocument = await documentsService.upload(formData);
+
+      setUploadProgress(60);
+
+      // Si el checkbox está activado, procesar OCR automáticamente
+      if (processOCR && uploadedDocument?.id) {
+        try {
+          await documentsService.processOCR(uploadedDocument.id);
+          showToast.success("Documento subido y OCR iniciado");
+        } catch (ocrError) {
+          console.error("Error al procesar OCR:", ocrError);
+          showToast.warning("Documento subido pero OCR falló");
+        }
+      } else {
+        showToast.success("Documento subido exitosamente");
+      }
 
       setUploadProgress(100);
 
-      showToast.success("Documento subido exitosamente");
-      
       // Redirigir según el contexto
       if (clinicalRecordIdFromUrl) {
         navigate(`/clinical-records/${clinicalRecordIdFromUrl}`);
@@ -310,7 +317,11 @@ export const DocumentUploadPage = () => {
                 disabled={!!clinicalRecordIdFromUrl}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.clinical_record ? "border-red-500" : "border-gray-300"
-                } ${clinicalRecordIdFromUrl ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                } ${
+                  clinicalRecordIdFromUrl
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 <option value="">Seleccione una historia clínica</option>
                 {clinicalRecords.map((record) => (
@@ -398,21 +409,38 @@ export const DocumentUploadPage = () => {
                 placeholder="Descripción adicional del documento..."
               />
             </div>
-          </div>
 
-          {/* Alert */}
-          {selectedRecordId && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">Procesamiento automático</p>
-                <p>
-                  El sistema procesará automáticamente el documento con OCR para
-                  extraer el texto. Este proceso puede tardar unos minutos.
-                </p>
-              </div>
-            </div>
-          )}
+            {/* Checkbox para OCR automático */}
+            {selectedFile &&
+              (selectedFile.type === "application/pdf" ||
+                selectedFile.type.startsWith("image/")) && (
+                <div className="md:col-span-2">
+                  <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="processOCR"
+                      checked={processOCR}
+                      onChange={(e) => setProcessOCR(e.target.checked)}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor="processOCR"
+                        className="text-sm font-medium text-gray-900 cursor-pointer"
+                      >
+                        Procesar OCR automáticamente
+                      </label>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Activar esta opción extraerá el texto del documento
+                        usando AWS Textract después de subirlo. Esto consume
+                        créditos de AWS.
+                      </p>
+                    </div>
+                    <FileSearch className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                  </div>
+                </div>
+              )}
+          </div>
 
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-6 border-t">

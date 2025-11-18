@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'blue' | 'green' | 'purple';
+  theme: 'light' | 'dark' | 'blue' | 'green' | 'purple' | 'yellow';
   language: 'es' | 'en';
   font_size: 'small' | 'medium' | 'large' | 'extra-large';
   font_family: 'inter' | 'roboto' | 'open-sans' | 'lato' | 'montserrat';
@@ -33,44 +32,38 @@ const defaultPreferences: UserPreferences = {
   custom_settings: {}
 };
 
-export const useSettingsStore = create<SettingsStore>()(
-  persist(
-    (set) => ({
-      preferences: defaultPreferences,
-      isLoading: false,
+// NO usar persist - las preferencias se guardan en la base de datos por usuario
+export const useSettingsStore = create<SettingsStore>((set) => ({
+  preferences: defaultPreferences,
+  isLoading: false,
 
-      setPreferences: (newPreferences) =>
-        set((state) => ({
-          preferences: { ...state.preferences, ...newPreferences }
-        })),
+  setPreferences: (newPreferences) =>
+    set((state) => ({
+      preferences: { ...state.preferences, ...newPreferences }
+    })),
 
-      setTheme: (theme) =>
-        set((state) => ({
-          preferences: { ...state.preferences, theme }
-        })),
+  setTheme: (theme) =>
+    set((state) => ({
+      preferences: { ...state.preferences, theme }
+    })),
 
-      setLanguage: (language) =>
-        set((state) => ({
-          preferences: { ...state.preferences, language }
-        })),
+  setLanguage: (language) =>
+    set((state) => ({
+      preferences: { ...state.preferences, language }
+    })),
 
-      setFontSize: (font_size) =>
-        set((state) => ({
-          preferences: { ...state.preferences, font_size }
-        })),
+  setFontSize: (font_size) =>
+    set((state) => ({
+      preferences: { ...state.preferences, font_size }
+    })),
 
-      setFontFamily: (font_family) =>
-        set((state) => ({
-          preferences: { ...state.preferences, font_family }
-        })),
+  setFontFamily: (font_family) =>
+    set((state) => ({
+      preferences: { ...state.preferences, font_family }
+    })),
 
-      setIsLoading: (isLoading) => set({ isLoading }),
+  setIsLoading: (isLoading) => set({ isLoading }),
 
-      resetPreferences: () =>
-        set({ preferences: defaultPreferences })
-    }),
-    {
-      name: 'user-settings-storage'
-    }
-  )
-);
+  resetPreferences: () =>
+    set({ preferences: defaultPreferences })
+}));

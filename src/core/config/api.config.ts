@@ -104,6 +104,8 @@ export const ENDPOINTS = {
     VIEW: (id: string) => `/documents/${id}/view/`,
     SIGN: (id: string) => `/documents/${id}/sign/`,
     ACCESS_LOG: (id: string) => `/documents/${id}/access_log/`,
+    PROCESS_OCR: (id: string) => `/documents/${id}/process-ocr/`,
+    ENHANCE_IMAGE: (id: string) => `/documents/${id}/enhance/`,
   },
   AUDIT: {
     LIST: "/audit/",
