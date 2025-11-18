@@ -1,4 +1,16 @@
-import { Home, Users, FileText, BarChart3, Settings, UserCog, Shield, Bell, ChevronDown, CreditCard, X } from "lucide-react";
+import {
+  Home,
+  Users,
+  FileText,
+  BarChart3,
+  Settings,
+  UserCog,
+  Shield,
+  Bell,
+  ChevronDown,
+  CreditCard,
+  X,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -15,10 +27,10 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const menuItems = [
-    { icon: Home, label: t('navigation.dashboard'), path: "/dashboard" },
-    { icon: UserCog, label: t('navigation.users'), path: "/users" },
-    { icon: Shield, label: t('navigation.roles'), path: "/roles" },
-    { icon: Users, label: t('navigation.patients'), path: "/patients" },
+    { icon: Home, label: t("navigation.dashboard"), path: "/dashboard" },
+    { icon: UserCog, label: t("navigation.users"), path: "/users" },
+    { icon: Shield, label: t("navigation.roles"), path: "/roles" },
+    { icon: Users, label: t("navigation.patients"), path: "/patients" },
     {
       icon: FileText,
       label: "Historias Clínicas",
@@ -28,8 +40,8 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
         { label: "Formularios clínicos", path: "/clinical-forms" },
       ],
     },
-    { icon: FileText, label: t('navigation.documents'), path: "/documents" },
-    { icon: BarChart3, label: t('navigation.reports'), path: "/reports" },
+    { icon: FileText, label: t("navigation.documents"), path: "/documents" },
+    { icon: BarChart3, label: t("navigation.reports"), path: "/reports" },
     {
       icon: Bell,
       label: "Notificaciones",
@@ -49,7 +61,7 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
         { label: "Pagos", path: "/billing/payments" },
       ],
     },
-    { icon: Settings, label: t('navigation.settings'), path: "/settings" },
+    { icon: Settings, label: t("navigation.settings"), path: "/settings" },
   ];
 
   const isSubmenuActive = (submenu?: Array<{ path: string }>) => {
@@ -66,7 +78,7 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={() => onClose && onClose()}
           />
-          <div className="relative flex flex-col w-64 bg-white">
+          <div className="relative flex flex-col w-64 bg-white app-sidebar">
             <div className="absolute top-2 right-2">
               <button
                 className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none"
@@ -205,7 +217,7 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
 
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div
-          className="flex flex-col w-64 border-r"
+          className="flex flex-col w-64 border-r app-sidebar"
           style={{
             backgroundColor: "rgb(var(--bg-primary))",
             borderColor: "rgb(var(--border-color))",

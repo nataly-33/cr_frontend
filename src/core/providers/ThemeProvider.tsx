@@ -13,18 +13,18 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     const root = document.documentElement;
 
     // Remover todas las clases de tema
-    root.classList.remove('theme-light', 'theme-dark', 'theme-blue', 'theme-green', 'theme-purple');
+    root.classList.remove('theme-light', 'theme-dark', 'theme-blue', 'theme-green', 'theme-purple', 'theme-yellow');
 
     // Agregar la clase del tema actual
     if (preferences.theme !== 'light') {
       root.classList.add(`theme-${preferences.theme}`);
     }
 
-    // Aplicar tamaño de fuente
+    // Aplicar tamaï¿½o de fuente
     root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'font-size-extra-large');
     root.classList.add(`font-size-${preferences.font_size}`);
 
-    // Aplicar tipografía
+    // Aplicar tipografï¿½a
     const fontFamilyMap = {
       'inter': 'Inter',
       'roboto': 'Roboto',

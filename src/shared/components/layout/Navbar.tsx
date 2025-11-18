@@ -32,7 +32,7 @@ export const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                 style={{ color: "rgb(var(--text-primary))" }}
               />
             </button>
-            <span className="ml-2 text-xl font-bold text-primary-600">
+            <span className="ml-2 text-2xl font-bold text-primary">
               {APP_TITLE}
             </span>
           </div>
