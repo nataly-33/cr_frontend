@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
+import ReactCompareImage from "react-compare-image";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import {
@@ -21,6 +22,8 @@ import {
   Copy,
   Loader,
   Eye,
+  Sparkles,
+  Save,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
 import type { ClinicalDocument } from "../types";
@@ -50,7 +53,14 @@ export const DocumentViewerPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"viewer" | "ocr">("viewer");
+  const [activeTab, setActiveTab] = useState<"viewer" | "ocr" | "enhance">("viewer");
+  const [enhancedImageUrl, setEnhancedImageUrl] = useState<string | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isProcessingOCR, setIsProcessingOCR] = useState(false);
+  const [selectedModality, setSelectedModality] = useState<string>("");
+  const [usePreset, setUsePreset] = useState(true);
+  const [clipLimit, setClipLimit] = useState(2.0);
+  const [tileGridSize, setTileGridSize] = useState(8);
 
   const deleteModal = useModal();
   const signModal = useModal();
@@ -184,10 +194,72 @@ export const DocumentViewerPage = () => {
     }
   };
 
+  const handleEnhanceImage = async () => {
+    if (!id) return;
+
+    try {
+      setIsEnhancing(true);
+
+      // Prepare request body based on preset or manual mode
+      const requestBody: any = {};
+
+      if (usePreset && selectedModality) {
+        requestBody.modality = selectedModality;
+      } else if (!usePreset) {
+        requestBody.clip_limit = clipLimit;
+        requestBody.tile_grid_size = [tileGridSize, tileGridSize];
+      }
+
+      const result = await documentsService.enhanceImage(id, requestBody);
+      setEnhancedImageUrl(result.enhanced_url);
+      showToast.success(result.message || "Imagen mejorada exitosamente");
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error || "Error al mejorar la imagen";
+      showToast.error(message);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const handleSaveEnhancedImage = async () => {
+    if (!enhancedImageUrl) return;
+
+    try {
+      showToast.success("Imagen mejorada guardada y subida a S3");
+      loadDocument(); // Reload to show the updated image
+      setActiveTab("viewer");
+    } catch (error) {
+      showToast.error("Error al guardar la imagen mejorada");
+    }
+  };
+
+  const handleProcessOCR = async () => {
+    if (!id) return;
+
+    try {
+      setIsProcessingOCR(true);
+      const result = await documentsService.processOCR(id);
+      showToast.success(result.message || "Procesamiento OCR iniciado");
+
+      // Reload document to update OCR status
+      setTimeout(() => {
+        loadDocument();
+      }, 1000);
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error || "Error al procesar OCR";
+      showToast.error(message);
+    } finally {
+      setIsProcessingOCR(false);
+    }
+  };
+
   const isPDF =
     document?.file_type === "application/pdf" ||
     document?.file_name?.endsWith(".pdf");
-  const isImage = document?.file_type?.startsWith("image/");
+  const isImage = document?.file_type?.startsWith("image/") ||
+                  document?.file_name?.match(/\.(jpg|jpeg|png|gif|bmp|tiff|tif|dcm|dicom)$/i);
   const hasOCR = document?.ocr_processed && document?.ocr_text;
 
   if (loading) {
@@ -248,6 +320,17 @@ export const DocumentViewerPage = () => {
                   Imprimir
                 </Button>
               )}
+              {(isPDF || isImage) && !document.ocr_processed && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<FileSearch className="h-4 w-4" />}
+                  onClick={handleProcessOCR}
+                  disabled={isProcessingOCR}
+                >
+                  {isProcessingOCR ? "Procesando..." : "Procesar OCR"}
+                </Button>
+              )}
               {!document.is_signed && (
                 <Button
                   variant="outline"
@@ -283,8 +366,8 @@ export const DocumentViewerPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Visor de Documento */}
           <div className="lg:col-span-2">
-            {/* Tab Navigation - Solo si hay OCR */}
-            {hasOCR && (
+            {/* Tab Navigation - SIEMPRE mostrar tabs si hay OCR O si es imagen */}
+            {(hasOCR || isImage || isPDF) && (
               <div className="flex border-b border-gray-200 bg-white mb-4 rounded-t-lg">
                 <button
                   onClick={() => setActiveTab("viewer")}
@@ -297,17 +380,33 @@ export const DocumentViewerPage = () => {
                   <Eye className="inline-block mr-2 h-4 w-4" />
                   Visor de Documento
                 </button>
-                <button
-                  onClick={() => setActiveTab("ocr")}
-                  className={`px-4 py-3 font-medium text-sm transition-colors relative ${
-                    activeTab === "ocr"
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-600 hover:text-gray-800"
-                  }`}
-                >
-                  <FileSearch className="inline-block mr-2 h-4 w-4" />
-                  Texto Extraído (OCR)
-                </button>
+                {hasOCR && (
+                  <button
+                    onClick={() => setActiveTab("ocr")}
+                    className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+                      activeTab === "ocr"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-800"
+                    }`}
+                  >
+                    <FileSearch className="inline-block mr-2 h-4 w-4" />
+                    Texto Extraído (OCR)
+                  </button>
+                )}
+                {/* SIEMPRE mostrar tab de mejora para imágenes médicas */}
+                {isImage && (
+                  <button
+                    onClick={() => setActiveTab("enhance")}
+                    className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+                      activeTab === "enhance"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-600 hover:text-gray-800"
+                    }`}
+                  >
+                    <Sparkles className="inline-block mr-2 h-4 w-4" />
+                    Mejorar Imagen
+                  </button>
+                )}
               </div>
             )}
 
@@ -565,6 +664,190 @@ export const DocumentViewerPage = () => {
                     </p>
                   </div>
                 )}
+              </Card>
+            )}
+
+            {/* Image Enhancement Tab */}
+            {activeTab === "enhance" && isImage && (
+              <Card>
+                <CardHeader
+                  title="Mejorar Imagen con CLAHE"
+                  subtitle="Mejora el contraste de imágenes médicas usando presets optimizados"
+                />
+
+                <div className="space-y-6">
+                  {/* Description */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-700">
+                      <strong>CLAHE</strong> (Contrast Limited Adaptive Histogram Equalization)
+                      mejora el contraste de imágenes médicas, haciendo más visibles los detalles importantes.
+                      Compatible con JPEG, PNG, TIFF, BMP y DICOM.
+                    </p>
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex gap-4 border-b pb-4">
+                    <button
+                      onClick={() => setUsePreset(true)}
+                      className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                        usePreset
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Presets por Modalidad
+                    </button>
+                    <button
+                      onClick={() => setUsePreset(false)}
+                      className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                        !usePreset
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Configuración Manual
+                    </button>
+                  </div>
+
+                  {/* Preset Selector */}
+                  {usePreset && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Selecciona el tipo de estudio médico:
+                      </label>
+                      <select
+                        value={selectedModality}
+                        onChange={(e) => setSelectedModality(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">-- Detección Automática --</option>
+                        <option value="xray">Radiografías (X-Ray) - Mayor contraste óseo</option>
+                        <option value="ct_scan">Tomografías (CT Scan) - Preservar detalles finos</option>
+                        <option value="mri">Resonancias (MRI) - Mejor contraste tejidos blandos</option>
+                        <option value="ultrasound">Ecografías (Ultrasound) - Reducir ruido speckle</option>
+                        <option value="mammography">Mamografías - Detectar microcalcificaciones</option>
+                        <option value="pet_scan">PET Scan - Preservar intensidades</option>
+                      </select>
+                      {selectedModality && (
+                        <p className="mt-2 text-sm text-gray-600">
+                          Este preset aplicará parámetros optimizados para {
+                            selectedModality === "xray" ? "radiografías" :
+                            selectedModality === "ct_scan" ? "tomografías" :
+                            selectedModality === "mri" ? "resonancias magnéticas" :
+                            selectedModality === "ultrasound" ? "ecografías" :
+                            selectedModality === "mammography" ? "mamografías" :
+                            "PET scans"
+                          }.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Manual Controls */}
+                  {!usePreset && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Límite de Contraste: {clipLimit.toFixed(1)}
+                        </label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          step="0.1"
+                          value={clipLimit}
+                          onChange={(e) => setClipLimit(parseFloat(e.target.value))}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Valores más altos = más contraste
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tamaño de Rejilla: {tileGridSize}x{tileGridSize}
+                        </label>
+                        <input
+                          type="range"
+                          min="4"
+                          max="16"
+                          step="2"
+                          value={tileGridSize}
+                          onChange={(e) => setTileGridSize(parseInt(e.target.value))}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Valores más pequeños = más detalle local
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enhance Button */}
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleEnhanceImage}
+                      disabled={isEnhancing || (usePreset && !selectedModality && !enhancedImageUrl)}
+                      leftIcon={<Sparkles className="h-4 w-4" />}
+                      className="flex-1"
+                    >
+                      {isEnhancing ? "Mejorando..." : "Mejorar Imagen"}
+                    </Button>
+                  </div>
+
+                  {/* Loading State */}
+                  {isEnhancing && (
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Loader className="h-8 w-8 text-blue-500 animate-spin mb-2" />
+                      <p className="text-sm text-gray-600">
+                        Aplicando mejora CLAHE a la imagen médica...
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Procesando con {usePreset ? `preset ${selectedModality || 'automático'}` : 'parámetros manuales'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Comparison Slider */}
+                  {fileUrl && enhancedImageUrl && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                        Comparación Deslizante (Original vs Mejorada)
+                      </h3>
+                      <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                        <ReactCompareImage
+                          leftImage={fileUrl}
+                          rightImage={enhancedImageUrl}
+                          leftImageLabel="Original"
+                          rightImageLabel="Mejorada"
+                          sliderLineColor="#3b82f6"
+                          sliderLineWidth={3}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                        <span>← Original</span>
+                        <span className="text-gray-700 font-medium">Desliza para comparar</span>
+                        <span>Mejorada →</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty State */}
+                  {!enhancedImageUrl && !isEnhancing && (
+                    <div className="flex flex-col items-center justify-center py-12 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                      <Sparkles className="h-16 w-16 mb-3" />
+                      <p className="text-sm font-medium">
+                        {usePreset
+                          ? "Selecciona el tipo de estudio y haz clic en 'Mejorar Imagen'"
+                          : "Ajusta los parámetros y haz clic en 'Mejorar Imagen'"}
+                      </p>
+                      <p className="text-xs mt-1">
+                        La imagen mejorada se guardará automáticamente en S3
+                      </p>
+                    </div>
+                  )}
+                </div>
               </Card>
             )}
           </div>

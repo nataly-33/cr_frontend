@@ -224,4 +224,31 @@ export const documentsService = {
   ): Promise<PaginatedResponse<ClinicalDocument>> => {
     return documentsService.getAll({ ...filters, search: query });
   },
+
+  /**
+   * Process OCR manually
+   */
+  processOCR: async (
+    id: string
+  ): Promise<{ message: string; ocr_status: string }> => {
+    const response = await apiService.post<{
+      message: string;
+      ocr_status: string;
+    }>(ENDPOINTS.DOCUMENTS.PROCESS_OCR(id));
+    return response.data;
+  },
+
+  /**
+   * Enhance image using CLAHE
+   */
+  enhanceImage: async (
+    id: string,
+    params?: { clip_limit?: number; tile_grid_size?: number }
+  ): Promise<{ enhanced_url: string; message: string }> => {
+    const response = await apiService.post<{
+      enhanced_url: string;
+      message: string;
+    }>(ENDPOINTS.DOCUMENTS.ENHANCE_IMAGE(id), params || {});
+    return response.data;
+  },
 };

@@ -72,16 +72,17 @@ export interface DocumentAccessLog {
   accessed_at: string;
 }
 
+// IMPORTANTE: Estos valores deben coincidir EXACTAMENTE con DOCUMENT_TYPE_CHOICES del backend
 export const DOCUMENT_TYPES = {
-  consultation: "Consulta M\u00e9dica",
+  consultation: "Consulta",
   lab_result: "Resultado de Laboratorio",
-  imaging: "Estudio de Imagen",
-  prescription: "Receta M\u00e9dica",
-  surgery: "Informe Quir\u00fargico",
-  discharge: "Alta M\u00e9dica",
-  consent: "Consentimiento Informado",
+  imaging_report: "Informe de Imagen",
+  prescription: "Receta",
+  surgical_note: "Nota Quirúrgica",
+  discharge_summary: "Resumen de Alta",
+  consent_form: "Consentimiento Informado",
+  progress_note: "Nota de Evolución",
   referral: "Referencia",
-  other: "Otro",
 } as const;
 
 export const DOCUMENT_STATUS = {
