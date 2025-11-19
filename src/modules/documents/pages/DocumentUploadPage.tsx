@@ -64,7 +64,7 @@ export const DocumentUploadPage = () => {
     },
   });
 
-  // const selectedRecordId = watch("clinical_record"); // No usado actualmente
+  // const _selectedRecordId = watch("clinical_record");
 
   // Configurar dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

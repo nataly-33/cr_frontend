@@ -60,6 +60,8 @@ import {
   CheckoutSuccessPage,
   CheckoutCancelPage,
 } from "@modules/billing";
+import DiabetesPredictionPage from "@modules/ai/pages/DiabetesPredictionPage";
+import DecisionTreePage from "@modules/ai/pages/DecisionTreePage";
 
 export const AppRoutes = () => {
   return (
@@ -88,6 +90,10 @@ export const AppRoutes = () => {
         <Route path="/patients/new" element={<PatientFormPage />} />
         <Route path="/patients/:id" element={<PatientDetailPage />} />
         <Route path="/patients/:id/edit" element={<PatientFormPage />} />
+        <Route path="/patients/:patientId/diabetes-prediction" element={<DiabetesPredictionPage />} />
+
+        {/* AI / Machine Learning */}
+        <Route path="/ai/decision-tree" element={<DecisionTreePage />} />
 
         {/* Clinical records */}
         <Route path="/clinical-records" element={<ClinicalRecordsListPage />} />

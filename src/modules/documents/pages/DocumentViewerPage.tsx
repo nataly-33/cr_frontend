@@ -845,7 +845,7 @@ export const DocumentViewerPage = () => {
                   {fileUrl && enhancedImageUrl && (
                     <div>
                       <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        Comparación Deslizante (Original vs Mejorada)
+                        Comparación (Original vs Mejorada)
                       </h3>
                       <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
                         <ReactCompareImage
