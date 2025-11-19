@@ -138,6 +138,20 @@ export const reportsService = {
   },
 
   /**
+   * Generate dynamic report with custom configuration
+   */
+  generateDynamic: async (config: any): Promise<any> => {
+    const response = await apiService.post<any>(
+      ENDPOINTS.REPORTS.GENERATE_DYNAMIC,
+      config,
+      {
+        responseType: config.export_format === "json" ? "json" : "blob",
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * Download report file
    */
   download: async (id: string): Promise<Blob> => {

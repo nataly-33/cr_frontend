@@ -10,6 +10,7 @@ import {
   ChevronDown,
   CreditCard,
   X,
+  Brain,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -60,6 +61,12 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
         { label: "Planes", path: "/billing" },
         { label: "Pagos", path: "/billing/payments" },
       ],
+    },
+    {
+      icon: Brain,
+      label: "IA & Predicciones",
+      path: "/ai",
+      submenu: [{ label: "Árbol de Decisión", path: "/ai/decision-tree" }],
     },
     { icon: Settings, label: t("navigation.settings"), path: "/settings" },
   ];

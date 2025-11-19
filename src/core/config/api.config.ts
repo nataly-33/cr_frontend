@@ -116,7 +116,7 @@ export const ENDPOINTS = {
   },
   REPORTS: {
     GENERATE: "/reports/generator/generate/",
-    GENERATE_DYNAMIC: "/reports/generator/generate_dynamic/",
+    GENERATE_DYNAMIC: "/reports/dynamic/generate/",
     AVAILABLE_TYPES: "/reports/generator/available_types/",
     LIST: "/reports/executions/",
     DETAIL: (id: string) => `/reports/executions/${id}/`,
@@ -149,5 +149,19 @@ export const ENDPOINTS = {
   SEED: {
     GENERATE: "/seed/generate/",
     LIST: "/seed/list/",
+  },
+  AI: {
+    DIABETES: {
+      BASE: "/ai/diabetes",
+      PREDICT: "/ai/diabetes/predict/",
+      PATIENT_HISTORY: (patientId: string) =>
+        `/ai/diabetes/patient/${patientId}/`,
+      MODEL_INFO: "/ai/diabetes/model/info/",
+      LIST: "/ai/diabetes/",
+      DETAIL: (id: string) => `/ai/diabetes/${id}/`,
+      TREE_VISUALIZATION: "/ai/diabetes/tree/visualization/",
+      TREE_RULES: "/ai/diabetes/tree/rules/",
+      FEATURE_IMPORTANCE: "/ai/diabetes/tree/feature-importance/",
+    },
   },
 };

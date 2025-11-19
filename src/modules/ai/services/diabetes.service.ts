@@ -1,14 +1,12 @@
-import { apiService } from '@shared/services/api.service';
-import { API_CONFIG } from '@core/config/api.config';
+import { apiService } from "@shared/services/api.service";
+import { ENDPOINTS, API_CONFIG } from "@core/config/api.config";
 import type {
   PredictResponse,
   ModelInfoResponse,
   PredictionHistoryResponse,
   DiabetesPrediction,
-  TreeRulesResponse
-} from '../types';
-
-const BASE_URL = '/ai/diabetes';
+  TreeRulesResponse,
+} from "../types";
 
 export const diabetesService = {
   /**
@@ -16,7 +14,7 @@ export const diabetesService = {
    */
   predict: async (patientId: string): Promise<PredictResponse> => {
     const response = await apiService.post<PredictResponse>(
-      `${BASE_URL}/predict/`,
+      ENDPOINTS.AI.DIABETES.PREDICT,
       { patient_id: patientId }
     );
     return response.data;
@@ -25,9 +23,11 @@ export const diabetesService = {
   /**
    * Obtiene el historial de predicciones de un paciente
    */
-  getPatientHistory: async (patientId: string): Promise<PredictionHistoryResponse> => {
+  getPatientHistory: async (
+    patientId: string
+  ): Promise<PredictionHistoryResponse> => {
     const response = await apiService.get<PredictionHistoryResponse>(
-      `${BASE_URL}/patient/${patientId}/`
+      ENDPOINTS.AI.DIABETES.PATIENT_HISTORY(patientId)
     );
     return response.data;
   },
@@ -37,7 +37,7 @@ export const diabetesService = {
    */
   getModelInfo: async (): Promise<ModelInfoResponse> => {
     const response = await apiService.get<ModelInfoResponse>(
-      `${BASE_URL}/model/info/`
+      ENDPOINTS.AI.DIABETES.MODEL_INFO
     );
     return response.data;
   },
@@ -46,7 +46,9 @@ export const diabetesService = {
    * Obtiene todas las predicciones
    */
   getAllPredictions: async (): Promise<DiabetesPrediction[]> => {
-    const response = await apiService.get<DiabetesPrediction[]>(`${BASE_URL}/`);
+    const response = await apiService.get<DiabetesPrediction[]>(
+      ENDPOINTS.AI.DIABETES.LIST
+    );
     return response.data;
   },
 
@@ -54,7 +56,9 @@ export const diabetesService = {
    * Obtiene una predicción específica por ID
    */
   getPredictionById: async (id: string): Promise<DiabetesPrediction> => {
-    const response = await apiService.get<DiabetesPrediction>(`${BASE_URL}/${id}/`);
+    const response = await apiService.get<DiabetesPrediction>(
+      ENDPOINTS.AI.DIABETES.DETAIL(id)
+    );
     return response.data;
   },
 
@@ -62,7 +66,7 @@ export const diabetesService = {
    * Obtiene la URL de la visualización del árbol de decisión
    */
   getTreeVisualizationUrl: (): string => {
-    return `${API_CONFIG.BASE_URL}${BASE_URL}/tree/visualization/`;
+    return `${API_CONFIG.BASE_URL}${ENDPOINTS.AI.DIABETES.TREE_VISUALIZATION}`;
   },
 
   /**
@@ -70,7 +74,7 @@ export const diabetesService = {
    */
   getTreeRules: async (): Promise<TreeRulesResponse> => {
     const response = await apiService.get<TreeRulesResponse>(
-      `${BASE_URL}/tree/rules/`
+      ENDPOINTS.AI.DIABETES.TREE_RULES
     );
     return response.data;
   },
@@ -79,6 +83,6 @@ export const diabetesService = {
    * Obtiene la URL del gráfico de importancia de características
    */
   getFeatureImportanceUrl: (): string => {
-    return `${API_CONFIG.BASE_URL}${BASE_URL}/tree/feature-importance/`;
-  }
+    return `${API_CONFIG.BASE_URL}${ENDPOINTS.AI.DIABETES.FEATURE_IMPORTANCE}`;
+  },
 };
