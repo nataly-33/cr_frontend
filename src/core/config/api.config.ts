@@ -150,4 +150,18 @@ export const ENDPOINTS = {
     GENERATE: "/seed/generate/",
     LIST: "/seed/list/",
   },
+  AI: {
+    DIABETES: {
+      BASE: "/ai/diabetes",
+      PREDICT: "/ai/diabetes/predict/",
+      PATIENT_HISTORY: (patientId: string) =>
+        `/ai/diabetes/patient/${patientId}/`,
+      MODEL_INFO: "/ai/diabetes/model/info/",
+      LIST: "/ai/diabetes/",
+      DETAIL: (id: string) => `/ai/diabetes/${id}/`,
+      TREE_VISUALIZATION: "/ai/diabetes/tree/visualization/",
+      TREE_RULES: "/ai/diabetes/tree/rules/",
+      FEATURE_IMPORTANCE: "/ai/diabetes/tree/feature-importance/",
+    },
+  },
 };
