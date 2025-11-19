@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
-import ReactCompareImage from "react-compare-image";
+// import ReactCompareImage from "react-compare-image";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import {
@@ -23,7 +23,7 @@ import {
   Loader,
   Eye,
   Sparkles,
-  Save,
+  // Save,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
 import type { ClinicalDocument } from "../types";
@@ -222,17 +222,17 @@ export const DocumentViewerPage = () => {
     }
   };
 
-  const handleSaveEnhancedImage = async () => {
-    if (!enhancedImageUrl) return;
+  // const _handleSaveEnhancedImage = async () => {
+  //   if (!enhancedImageUrl) return;
 
-    try {
-      showToast.success("Imagen mejorada guardada y subida a S3");
-      loadDocument(); // Reload to show the updated image
-      setActiveTab("viewer");
-    } catch (error) {
-      showToast.error("Error al guardar la imagen mejorada");
-    }
-  };
+  //   try {
+  //     showToast.success("Imagen mejorada guardada y subida a S3");
+  //     loadDocument(); // Reload to show the updated image
+  //     setActiveTab("viewer");
+  //   } catch (error) {
+  //     showToast.error("Error al guardar la imagen mejorada");
+  //   }
+  // };
 
   const handleProcessOCR = async () => {
     if (!id) return;
@@ -813,22 +813,17 @@ export const DocumentViewerPage = () => {
                   {fileUrl && enhancedImageUrl && (
                     <div>
                       <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                        Comparación Deslizante (Original vs Mejorada)
+                        Comparación (Original vs Mejorada)
                       </h3>
-                      <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-                        <ReactCompareImage
-                          leftImage={fileUrl}
-                          rightImage={enhancedImageUrl}
-                          leftImageLabel="Original"
-                          rightImageLabel="Mejorada"
-                          sliderLineColor="#3b82f6"
-                          sliderLineWidth={3}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                        <span>← Original</span>
-                        <span className="text-gray-700 font-medium">Desliza para comparar</span>
-                        <span>Mejorada →</span>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <img src={fileUrl} alt="Original" className="w-full" />
+                          <p className="text-xs text-center p-2 text-gray-600">Original</p>
+                        </div>
+                        <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <img src={enhancedImageUrl} alt="Mejorada" className="w-full" />
+                          <p className="text-xs text-center p-2 text-gray-600">Mejorada</p>
+                        </div>
                       </div>
                     </div>
                   )}

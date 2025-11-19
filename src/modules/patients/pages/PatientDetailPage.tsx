@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin, Heart, AlertCircle, FileText, Plus } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, User, Phone, Mail, MapPin, Heart, AlertCircle, FileText, Plus, Activity } from "lucide-react";
 import { patientsService } from "../services/patients.service";
 import { clinicalRecordsService } from "@modules/clinical-records/services/clinical-records.service";
 import type { Patient } from "../types";
@@ -261,6 +261,27 @@ export const PatientDetailPage = () => {
               </div>
             </div>
           )}
+        </div>
+      </Card>
+
+      {/* Predicción de Diabetes */}
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-600" />
+              Análisis Predictivo de Diabetes
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Evaluación del riesgo de diabetes basada en el historial clínico del paciente
+            </p>
+          </div>
+          <Button
+            leftIcon={<Activity className="h-4 w-4" />}
+            onClick={() => navigate(`/patients/${id}/diabetes-prediction`)}
+          >
+            Ver Predicción
+          </Button>
         </div>
       </Card>
 

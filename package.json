@@ -10,11 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cornerstonejs/core": "^4.11.1",
+    "@cornerstonejs/dicom-image-loader": "^4.11.1",
+    "@cornerstonejs/tools": "^4.11.1",
     "@hookform/resolvers": "^5.2.2",
     "@stripe/react-stripe-js": "^5.3.0",
     "@tanstack/react-query": "^5.90.6",
     "axios": "^1.13.1",
     "date-fns": "^4.1.0",
+    "dicom-parser": "^1.8.21",
     "i18next": "^25.6.0",
     "lucide-react": "^0.552.0",
     "pdfjs-dist": "^5.4.394",
