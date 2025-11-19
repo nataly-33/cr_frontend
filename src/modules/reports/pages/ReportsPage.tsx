@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import axios from "axios";
+import { reportsService } from "../services";
 
 interface Filter {
   field: string;
@@ -238,26 +238,14 @@ export const ReportsPage = () => {
   const generateReport = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
-
-      const response = await axios.post(
-        "http://localhost:8000/api/reports/dynamic/generate/",
-        config,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          responseType: config.export_format === "json" ? "json" : "blob",
-        }
-      );
+      const response = await reportsService.generateDynamic(config);
 
       if (config.export_format === "json") {
-        setResults(response.data);
+        setResults(response);
         toast.success("Reporte generado exitosamente");
       } else {
         // Descargar archivo
-        const blob = new Blob([response.data]);
+        const blob = new Blob([response]);
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;

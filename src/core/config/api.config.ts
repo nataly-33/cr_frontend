@@ -116,7 +116,7 @@ export const ENDPOINTS = {
   },
   REPORTS: {
     GENERATE: "/reports/generator/generate/",
-    GENERATE_DYNAMIC: "/reports/generator/generate_dynamic/",
+    GENERATE_DYNAMIC: "/reports/dynamic/generate/",
     AVAILABLE_TYPES: "/reports/generator/available_types/",
     LIST: "/reports/executions/",
     DETAIL: (id: string) => `/reports/executions/${id}/`,
