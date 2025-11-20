@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
-import ReactCompareImage from "react-compare-image";
+// import ReactCompareImage from "react-compare-image";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import {
@@ -23,6 +23,7 @@ import {
   Loader,
   Eye,
   Sparkles,
+  // Save,
 } from "lucide-react";
 import { documentsService } from "../services/documents.service";
 import type { ClinicalDocument } from "../types";
@@ -37,6 +38,7 @@ import {
 } from "@shared/components/ui";
 import { useModal } from "@shared/hooks";
 import { showToast, formatDate } from "@shared/utils";
+import { DicomViewer } from "../components/DicomViewer";
 
 // Configurar worker de PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -52,9 +54,7 @@ export const DocumentViewerPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [scale, setScale] = useState(1.0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"viewer" | "ocr" | "enhance">(
-    "viewer"
-  );
+  const [activeTab, setActiveTab] = useState<"viewer" | "ocr" | "enhance">("viewer");
   const [enhancedImageUrl, setEnhancedImageUrl] = useState<string | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
@@ -90,13 +90,11 @@ export const DocumentViewerPage = () => {
           console.log("View data:", viewData);
 
           // Verificar que la URL sea válida antes de establecerla
-          if (viewData.url && viewData.url.trim() !== "") {
+          if (viewData.url && viewData.url.trim() !== '') {
             setFileUrl(viewData.url);
           } else {
             console.warn("URL de visualización vacía o inválida");
-            showToast.warning(
-              "El archivo existe pero no se pudo generar la URL de previsualización"
-            );
+            showToast.warning("El archivo existe pero no se pudo generar la URL de previsualización");
           }
         } catch (error) {
           console.error("Error al obtener URL de visualización:", error);
@@ -143,7 +141,7 @@ export const DocumentViewerPage = () => {
 
       // El backend ya configura Content-Disposition para forzar descarga
       // Simplemente abrimos la URL y el navegador descargará automáticamente
-      window.open(url, "_blank");
+      window.open(url, '_blank');
 
       showToast.success("Descargando documento...");
     } catch (error) {
@@ -225,8 +223,7 @@ export const DocumentViewerPage = () => {
     }
   };
 
-  // Función para guardar imagen mejorada (reservada para futuro uso)
-  // const handleSaveEnhancedImage = async () => {
+  // const _handleSaveEnhancedImage = async () => {
   //   if (!enhancedImageUrl) return;
 
   //   try {
@@ -251,7 +248,8 @@ export const DocumentViewerPage = () => {
         loadDocument();
       }, 1000);
     } catch (error: any) {
-      const message = error.response?.data?.error || "Error al procesar OCR";
+      const message =
+        error.response?.data?.error || "Error al procesar OCR";
       showToast.error(message);
     } finally {
       setIsProcessingOCR(false);
@@ -261,9 +259,15 @@ export const DocumentViewerPage = () => {
   const isPDF =
     document?.file_type === "application/pdf" ||
     document?.file_name?.endsWith(".pdf");
-  const isImage =
-    document?.file_type?.startsWith("image/") ||
-    document?.file_name?.match(/\.(jpg|jpeg|png|gif|bmp|tiff|tif|dcm|dicom)$/i);
+  const isImage = document?.file_type?.startsWith("image/") ||
+                  document?.file_name?.match(/\.(jpg|jpeg|png|gif|bmp|tiff|tif|dcm|dicom)$/i);
+
+  // Detectar si es imagen médica (DICOM o tipo imaging_report)
+  const isMedicalImage =
+    document?.document_type === "imaging_report" ||
+    document?.file_name?.match(/\.(dcm|dicom)$/i) ||
+    document?.file_type === "application/dicom";
+
   const hasOCR = document?.ocr_processed && document?.ocr_text;
 
   if (loading) {
@@ -495,6 +499,14 @@ export const DocumentViewerPage = () => {
                           renderAnnotationLayer={true}
                         />
                       </Document>
+                    ) : isMedicalImage && fileUrl ? (
+                      // Visor DICOM para imágenes médicas
+                      <div className="h-screen">
+                        <DicomViewer
+                          imageUrl={fileUrl}
+                          modality="MRI"
+                        />
+                      </div>
                     ) : isImage && fileUrl ? (
                       <div className="p-4">
                         <img
@@ -683,9 +695,8 @@ export const DocumentViewerPage = () => {
                   {/* Description */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-gray-700">
-                      <strong>CLAHE</strong> (Contrast Limited Adaptive
-                      Histogram Equalization) mejora el contraste de imágenes
-                      médicas, haciendo más visibles los detalles importantes.
+                      <strong>CLAHE</strong> (Contrast Limited Adaptive Histogram Equalization)
+                      mejora el contraste de imágenes médicas, haciendo más visibles los detalles importantes.
                       Compatible con JPEG, PNG, TIFF, BMP y DICOM.
                     </p>
                   </div>
@@ -726,40 +737,23 @@ export const DocumentViewerPage = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">-- Detección Automática --</option>
-                        <option value="xray">
-                          Radiografías (X-Ray) - Mayor contraste óseo
-                        </option>
-                        <option value="ct_scan">
-                          Tomografías (CT Scan) - Preservar detalles finos
-                        </option>
-                        <option value="mri">
-                          Resonancias (MRI) - Mejor contraste tejidos blandos
-                        </option>
-                        <option value="ultrasound">
-                          Ecografías (Ultrasound) - Reducir ruido speckle
-                        </option>
-                        <option value="mammography">
-                          Mamografías - Detectar microcalcificaciones
-                        </option>
-                        <option value="pet_scan">
-                          PET Scan - Preservar intensidades
-                        </option>
+                        <option value="xray">Radiografías (X-Ray) - Mayor contraste óseo</option>
+                        <option value="ct_scan">Tomografías (CT Scan) - Preservar detalles finos</option>
+                        <option value="mri">Resonancias (MRI) - Mejor contraste tejidos blandos</option>
+                        <option value="ultrasound">Ecografías (Ultrasound) - Reducir ruido speckle</option>
+                        <option value="mammography">Mamografías - Detectar microcalcificaciones</option>
+                        <option value="pet_scan">PET Scan - Preservar intensidades</option>
                       </select>
                       {selectedModality && (
                         <p className="mt-2 text-sm text-gray-600">
-                          Este preset aplicará parámetros optimizados para{" "}
-                          {selectedModality === "xray"
-                            ? "radiografías"
-                            : selectedModality === "ct_scan"
-                            ? "tomografías"
-                            : selectedModality === "mri"
-                            ? "resonancias magnéticas"
-                            : selectedModality === "ultrasound"
-                            ? "ecografías"
-                            : selectedModality === "mammography"
-                            ? "mamografías"
-                            : "PET scans"}
-                          .
+                          Este preset aplicará parámetros optimizados para {
+                            selectedModality === "xray" ? "radiografías" :
+                            selectedModality === "ct_scan" ? "tomografías" :
+                            selectedModality === "mri" ? "resonancias magnéticas" :
+                            selectedModality === "ultrasound" ? "ecografías" :
+                            selectedModality === "mammography" ? "mamografías" :
+                            "PET scans"
+                          }.
                         </p>
                       )}
                     </div>
@@ -778,9 +772,7 @@ export const DocumentViewerPage = () => {
                           max="5"
                           step="0.1"
                           value={clipLimit}
-                          onChange={(e) =>
-                            setClipLimit(parseFloat(e.target.value))
-                          }
+                          onChange={(e) => setClipLimit(parseFloat(e.target.value))}
                           className="w-full"
                         />
                         <p className="text-xs text-gray-500 mt-1">
@@ -798,9 +790,7 @@ export const DocumentViewerPage = () => {
                           max="16"
                           step="2"
                           value={tileGridSize}
-                          onChange={(e) =>
-                            setTileGridSize(parseInt(e.target.value))
-                          }
+                          onChange={(e) => setTileGridSize(parseInt(e.target.value))}
                           className="w-full"
                         />
                         <p className="text-xs text-gray-500 mt-1">
@@ -814,10 +804,7 @@ export const DocumentViewerPage = () => {
                   <div className="flex gap-3">
                     <Button
                       onClick={handleEnhanceImage}
-                      disabled={
-                        isEnhancing ||
-                        (usePreset && !selectedModality && !enhancedImageUrl)
-                      }
+                      disabled={isEnhancing || (usePreset && !selectedModality && !enhancedImageUrl)}
                       leftIcon={<Sparkles className="h-4 w-4" />}
                       className="flex-1"
                     >
@@ -833,10 +820,7 @@ export const DocumentViewerPage = () => {
                         Aplicando mejora CLAHE a la imagen médica...
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Procesando con{" "}
-                        {usePreset
-                          ? `preset ${selectedModality || "automático"}`
-                          : "parámetros manuales"}
+                        Procesando con {usePreset ? `preset ${selectedModality || 'automático'}` : 'parámetros manuales'}
                       </p>
                     </div>
                   )}
@@ -847,22 +831,15 @@ export const DocumentViewerPage = () => {
                       <h3 className="text-sm font-semibold text-gray-700 mb-3">
                         Comparación (Original vs Mejorada)
                       </h3>
-                      <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-                        <ReactCompareImage
-                          leftImage={fileUrl}
-                          rightImage={enhancedImageUrl}
-                          leftImageLabel="Original"
-                          rightImageLabel="Mejorada"
-                          sliderLineColor="#3b82f6"
-                          sliderLineWidth={3}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                        <span>← Original</span>
-                        <span className="text-gray-700 font-medium">
-                          Desliza para comparar
-                        </span>
-                        <span>Mejorada →</span>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <img src={fileUrl} alt="Original" className="w-full" />
+                          <p className="text-xs text-center p-2 text-gray-600">Original</p>
+                        </div>
+                        <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                          <img src={enhancedImageUrl} alt="Mejorada" className="w-full" />
+                          <p className="text-xs text-center p-2 text-gray-600">Mejorada</p>
+                        </div>
                       </div>
                     </div>
                   )}

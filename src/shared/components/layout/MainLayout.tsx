@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
+import HelpChatButton from "../../../modules/help/components/HelpChatButton";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -28,6 +29,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           </div>
         </main>
       </div>
+
+      {/* Botón flotante de ayuda */}
+      <HelpChatButton variant="primary" position="bottom-right" />
     </div>
   );
 };
