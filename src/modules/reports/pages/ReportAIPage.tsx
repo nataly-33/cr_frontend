@@ -205,39 +205,75 @@ export const ReportAIPage = () => {
             </div>
           </div>
 
-          {/* Ejemplos rápidos - Reportes Complejos Validados */}
+          {/* Ejemplos rápidos - Simplificado */}
           <div className="card">
-            <h3 className="text-lg font-semibold mb-3">Reportes Disponibles</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Ejemplos de Consultas
+              </h3>
+              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                5 Ejemplos
+              </span>
+            </div>
             <div className="space-y-2">
               {[
                 {
-                  label:
-                    "Historias clínicas de noviembre ordenadas por paciente",
-                  query:
-                    "Historias clínicas creadas en noviembre de 2025 ordenadas por paciente",
+                  label: "🩸 Historias clínicas tipo de sangre AB",
+                  query: "Historias clínicas tipo AB ordenadas alfabéticamente",
+                  type: "filtro-avanzado"
                 },
                 {
-                  label: "Cantidad de visitas por pacientes en noviembre",
-                  query:
-                    "Cantidad de visitas por pacientes del mes de noviembre",
+                  label: "👨 Pacientes hombres registrados en 2025",
+                  query: "Pacientes hombres creados en 2025",
+                  type: "filtro"
                 },
                 {
-                  label: "Historias clínicas tipo AB ordenadas por paciente",
-                  query:
-                    "Historias clínicas de tipo de sangre AB ordenados por el nombre del paciente",
+                  label: "👩 Pacientes mujeres de noviembre",
+                  query: "Pacientes mujeres creados en noviembre 2025",
+                  type: "filtro"
+                },
+                {
+                  label: "📋 Historias con nombre del paciente",
+                  query: "Historias clínicas con nombre del paciente ordenadas por paciente",
+                  type: "join"
+                },
+                {
+                  label: "📊 Cantidad de formularios por paciente",
+                  query: "Cantidad de formularios por paciente en noviembre 2025",
+                  type: "agregacion"
                 },
               ].map((example, idx) => (
                 <button
-                  key={idx}
+                  key={`example-${idx}`}
                   onClick={() => setQueryText(example.query)}
-                  className="w-full text-left p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border rounded-lg"
+                  className="w-full text-left p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 group"
                   disabled={loading}
                 >
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                  <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 font-medium">
                     {example.label}
                   </span>
                 </button>
               ))}
+            </div>
+
+            {/* Tip único */}
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+              <p className="text-xs text-blue-800 dark:text-blue-300">
+                💡 <strong>Tip:</strong> Prueba consultas como "Pacientes creados en octubre 2025" o "Historias clínicas ordenadas por paciente"
+              </p>
             </div>
           </div>
 
