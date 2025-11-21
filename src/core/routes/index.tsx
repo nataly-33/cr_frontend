@@ -33,7 +33,11 @@ import {
   RolesListPage,
   RoleFormPage,
 } from "@modules/users/pages";
-import { ReportsPage, ReportViewerPage } from "@modules/reports/pages";
+import {
+  ReportsPage,
+  ReportViewerPage,
+  ReportAIPage,
+} from "@modules/reports/pages";
 import {
   ClinicalFormsListPage,
   ClinicalFormDetailPage,
@@ -91,7 +95,10 @@ export const AppRoutes = () => {
         <Route path="/patients/new" element={<PatientFormPage />} />
         <Route path="/patients/:id" element={<PatientDetailPage />} />
         <Route path="/patients/:id/edit" element={<PatientFormPage />} />
-        <Route path="/patients/:patientId/diabetes-prediction" element={<DiabetesPredictionPage />} />
+        <Route
+          path="/patients/:patientId/diabetes-prediction"
+          element={<DiabetesPredictionPage />}
+        />
 
         {/* AI / Machine Learning */}
         <Route path="/ai/decision-tree" element={<DecisionTreePage />} />
@@ -201,6 +208,7 @@ export const AppRoutes = () => {
         {/* Reports */}
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/reports/:id" element={<ReportViewerPage />} />
+        <Route path="/reports-ai" element={<ReportAIPage />} />
 
         {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
