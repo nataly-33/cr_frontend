@@ -42,7 +42,15 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
       ],
     },
     { icon: FileText, label: t("navigation.documents"), path: "/documents" },
-    { icon: BarChart3, label: t("navigation.reports"), path: "/reports" },
+    {
+      icon: BarChart3,
+      label: t("navigation.reports"),
+      path: "/reports",
+      submenu: [
+        { label: "Reportes Dinámicos", path: "/reports" },
+        { label: "Reportes con IA", path: "/reports-ai" },
+      ],
+    },
     {
       icon: Bell,
       label: "Notificaciones",

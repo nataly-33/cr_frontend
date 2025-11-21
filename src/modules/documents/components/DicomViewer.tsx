@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useRef, useState } from "react";
 import {
   ZoomIn,
   ZoomOut,
   Maximize,
   RotateCw,
-  RefreshCw,
-} from 'lucide-react';
-import { Button, Card } from '@shared/components/ui';
+  Ruler,
+  Move,
+  Settings,
+} from "lucide-react";
+import { Button, Card } from "@shared/components/ui";
 
 interface DicomViewerProps {
   /** URL del archivo DICOM o imagen médica */
@@ -16,40 +18,52 @@ interface DicomViewerProps {
 }
 
 /**
- * Visor de imágenes médicas con herramientas básicas
+ * Visor DICOM simplificado
  *
- * NOTA: Este es un visor simplificado para imágenes médicas.
- * Para funcionalidad completa DICOM (windowing, mediciones, etc.)
- * se recomienda integrar Cornerstone.js 3D o OHIF Viewer.
+ * TODO: Implementar cornerstoneJS v3 con las APIs actualizadas
+ * Actualmente muestra un placeholder mientras se configura la librería
  */
 export const DicomViewer = ({
-  imageUrl,
-  modality = 'CT',
+  dicomUrl,
+  modality = "CT",
+  windowPresets,
 }: DicomViewerProps) => {
-  const [scale, setScale] = useState(1.0);
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const [activeTool, setActiveTool] = useState<string>("Pan");
+  const [currentPreset, setCurrentPreset] = useState(0);
+  const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [invert, setInvert] = useState(false);
+
+  // Presets por defecto según modalidad
+  const defaultPresets = windowPresets || getDefaultPresets(modality);
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.2, 3.0));
+    setZoom((z) => z + 0.2);
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.2, 0.5));
+    setZoom((z) => Math.max(0.2, z - 0.2));
   };
 
   const handleResetView = () => {
-    setScale(1.0);
+    setZoom(1);
     setRotation(0);
-    setInvert(false);
   };
 
   const handleRotate = () => {
-    setRotation(prev => (prev + 90) % 360);
+    setRotation((r) => (r + 90) % 360);
   };
 
-  const handleInvert = () => {
-    setInvert(prev => !prev);
+  const handleToolChange = (toolName: string) => {
+    setActiveTool(toolName);
+  };
+
+  const handlePresetChange = (index: number) => {
+    setCurrentPreset(index);
+  };
+
+  const getVariant = (toolName: string): any => {
+    return activeTool === toolName ? "default" : "outline";
   };
 
   return (
@@ -59,6 +73,15 @@ export const DicomViewer = ({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           {/* Herramientas básicas */}
           <div className="flex items-center gap-2">
+            <Button
+              variant={getVariant("Pan") as any}
+              size="sm"
+              onClick={() => handleToolChange("Pan")}
+              title="Mover (Pan)"
+            >
+              <Move className="h-4 w-4" />
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -89,15 +112,6 @@ export const DicomViewer = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleInvert}
-              title="Invertir colores"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
               onClick={handleResetView}
               title="Restaurar vista"
             >
@@ -109,45 +123,140 @@ export const DicomViewer = ({
             </span>
           </div>
 
-          {/* Información */}
-          <div className="text-sm text-gray-600">
-            Modalidad: {modality}
+          {/* Herramientas de medición */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={getVariant("Wwwc") as any}
+              size="sm"
+              onClick={() => handleToolChange("Wwwc")}
+              title="Ajustar ventana/nivel"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="ml-2 text-sm">W/L</span>
+            </Button>
+
+            <Button
+              variant={getVariant("Length") as any}
+              size="sm"
+              onClick={() => handleToolChange("Length")}
+              title="Medir distancia"
+            >
+              <Ruler className="h-4 w-4" />
+              <span className="ml-2 text-sm">Medir</span>
+            </Button>
+
+            <Button
+              variant={getVariant("Angle") as any}
+              size="sm"
+              onClick={() => handleToolChange("Angle")}
+              title="Medir ángulo"
+            >
+              <span className="text-sm">∠</span>
+            </Button>
+          </div>
+
+          {/* Presets de ventana/nivel */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Preset:</span>
+            <select
+              className="px-3 py-1 border rounded-md text-sm"
+              value={currentPreset}
+              onChange={(e) => handlePresetChange(Number(e.target.value))}
+            >
+              {defaultPresets.map((preset, index) => (
+                <option key={index} value={index}>
+                  {preset.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </Card>
 
-      {/* Área del visor */}
+      {/* Área del visor DICOM */}
       <div className="flex-1 bg-black rounded-lg overflow-hidden relative flex items-center justify-center">
-        <div className="relative">
-          <img
-            src={imageUrl}
-            alt="Imagen médica"
-            className="max-w-full max-h-full object-contain"
-            style={{
-              transform: `scale(${scale}) rotate(${rotation}deg)`,
-              filter: invert ? 'invert(1)' : 'none',
-              transformOrigin: 'center',
-              transition: 'transform 0.2s ease-out, filter 0.2s ease-out',
-            }}
-          />
+        <div
+          ref={viewerRef}
+          className="w-full h-full flex items-center justify-center"
+          style={{
+            minHeight: "500px",
+            transform: `scale(${zoom}) rotate(${rotation}deg)`,
+            transition: "transform 0.2s ease-in-out",
+          }}
+        >
+          {/* Placeholder - Imagen DICOM */}
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="text-gray-400 text-center">
+              <p className="mb-2">Visor DICOM</p>
+              <p className="text-sm text-gray-500">Modalidad: {modality}</p>
+              {dicomUrl && (
+                <a
+                  href={dicomUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 text-xs mt-2 break-all max-w-xs"
+                >
+                  {dicomUrl}
+                </a>
+              )}
+              <div className="mt-4 text-xs text-gray-500 space-y-1">
+                <p>Zoom: {(zoom * 100).toFixed(0)}%</p>
+                <p>Rotación: {rotation}°</p>
+                <p>Herramienta activa: {activeTool}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Información de la imagen (overlay) */}
         <div className="absolute top-4 left-4 text-white text-sm space-y-1 bg-black/60 p-3 rounded">
           <div>Modalidad: {modality}</div>
           <div className="text-xs text-gray-300">
-            Usar scroll para zoom<br />
-            Click y arrastrar para mover
+            Herramienta: {activeTool}
+            <br />
+            Zoom: {(zoom * 100).toFixed(0)}%
           </div>
         </div>
+      </div>
 
-        {/* Nota sobre funcionalidad avanzada */}
-        <div className="absolute bottom-4 left-4 right-4 text-white text-xs bg-blue-600/80 p-3 rounded">
-          <strong>ℹ️ Visor Simplificado</strong><br />
-          Este es un visor básico. Para funcionalidad completa DICOM (windowing, mediciones, MPR),
-          se requiere integrar <a href="https://www.cornerstonejs.org/" target="_blank" rel="noopener noreferrer" className="underline">Cornerstone.js 3D</a> o <a href="https://ohif.org/" target="_blank" rel="noopener noreferrer" className="underline">OHIF Viewer</a>.
-        </div>
+      {/* Nota informativa */}
+      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+        <strong>Nota:</strong> El visor DICOM completo con cornerstoneJS está en
+        desarrollo. Actualmente se puede descargar la imagen mediante el enlace
+        proporcionado.
       </div>
     </div>
   );
 };
+
+// Presets de ventana/nivel según modalidad
+function getDefaultPresets(modality: string) {
+  const presets: Record<
+    string,
+    Array<{ name: string; windowWidth: number; windowCenter: number }>
+  > = {
+    CT: [
+      { name: "Pulmón", windowWidth: 1500, windowCenter: -600 },
+      { name: "Mediastino", windowWidth: 350, windowCenter: 50 },
+      { name: "Hueso", windowWidth: 2500, windowCenter: 480 },
+      { name: "Cerebro", windowWidth: 80, windowCenter: 40 },
+      { name: "Hígado", windowWidth: 150, windowCenter: 30 },
+    ],
+    MRI: [
+      { name: "T1", windowWidth: 600, windowCenter: 300 },
+      { name: "T2", windowWidth: 400, windowCenter: 200 },
+      { name: "FLAIR", windowWidth: 500, windowCenter: 250 },
+    ],
+    CR: [
+      { name: "Tórax", windowWidth: 2000, windowCenter: 1000 },
+      { name: "Abdomen", windowWidth: 400, windowCenter: 40 },
+    ],
+    US: [{ name: "General", windowWidth: 256, windowCenter: 128 }],
+  };
+
+  return (
+    presets[modality] || [
+      { name: "General", windowWidth: 400, windowCenter: 40 },
+    ]
+  );
+}
