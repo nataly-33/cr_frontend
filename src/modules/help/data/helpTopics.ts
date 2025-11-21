@@ -497,35 +497,40 @@ export const helpTopics: HelpTopic[] = [
   // ===== REPORTES =====
   {
     id: 'generate_reports',
-    title: '¿Cómo generar reportes?',
-    description: 'Crea reportes estadísticos y analíticos del sistema.',
+    title: '¿Cómo generar reportes con IA?',
+    description: 'Crea reportes usando lenguaje natural - la IA convierte tu consulta a SQL automáticamente.',
     category: HelpCategory.REPORTS,
-    tags: ['reportes', 'estadísticas', 'analítica', 'informes'],
+    tags: ['reportes', 'estadísticas', 'analítica', 'informes', 'ia', 'lenguaje natural', 'sql', 'text-to-sql'],
     roles: [], // Disponible para todos
     steps: [
       {
-        title: 'Acceder a Reportes',
-        description: 'Desde el menú, selecciona "Reportes" o "Analítica".',
+        title: 'Acceder al Generador de Reportes con IA',
+        description: 'Desde el menú, selecciona "Reportes" > "Generador Inteligente".',
         iconName: 'FiBarChart2',
       },
       {
-        title: 'Seleccionar tipo de reporte',
-        description: 'Elige entre: pacientes atendidos, diagnósticos, evolución, tiempos de atención, etc.',
-        iconName: 'FiFileText',
+        title: 'Escribir consulta en lenguaje natural',
+        description: 'Escribe tu solicitud en español normal. Ejemplo: "Formularios clínicos de pacientes entre agosto y septiembre 2025 que pidieron orden de laboratorio".',
+        iconName: 'FiEdit',
       },
       {
-        title: 'Configurar filtros',
-        description: 'Establece el rango de fechas, servicios, médicos o diagnósticos a incluir.',
-        iconName: 'FiFilter',
+        title: 'IA parsea tu texto a SQL',
+        description: 'El sistema usa IA para convertir automáticamente tu texto a una consulta SQL. Verás la query generada en pantalla.',
+        iconName: 'FiCpu',
       },
       {
-        title: 'Generar reporte',
-        description: 'Presiona "Generar". El sistema procesará la información.',
-        iconName: 'FiRefreshCw',
+        title: 'Revisar query SQL generada',
+        description: 'Revisa la consulta SQL que la IA creó. Puedes modificarla manualmente si lo deseas o pedirle a la IA que la ajuste.',
+        iconName: 'FiCode',
       },
       {
-        title: 'Exportar',
-        description: 'Puedes exportar el reporte en PDF, Excel o CSV.',
+        title: 'Ejecutar reporte',
+        description: 'Presiona "Ejecutar Reporte". El sistema ejecutará la query y mostrará los resultados en una tabla.',
+        iconName: 'FiPlay',
+      },
+      {
+        title: 'Exportar resultados',
+        description: 'Exporta los datos en PDF, Excel o CSV. También puedes guardar la consulta para reutilizarla.',
         iconName: 'FiDownload',
       },
     ],

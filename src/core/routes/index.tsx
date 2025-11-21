@@ -62,6 +62,7 @@ import {
 } from "@modules/billing";
 import DiabetesPredictionPage from "@modules/ai/pages/DiabetesPredictionPage";
 import DecisionTreePage from "@modules/ai/pages/DecisionTreePage";
+import AIReportsPage from "@modules/ai/pages/AIReportsPage";
 
 export const AppRoutes = () => {
   return (
@@ -94,6 +95,7 @@ export const AppRoutes = () => {
 
         {/* AI / Machine Learning */}
         <Route path="/ai/decision-tree" element={<DecisionTreePage />} />
+        <Route path="/ai/reports" element={<AIReportsPage />} />
 
         {/* Clinical records */}
         <Route path="/clinical-records" element={<ClinicalRecordsListPage />} />
