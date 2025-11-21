@@ -12,9 +12,17 @@ import { Button, Card } from "@shared/components/ui";
 
 interface DicomViewerProps {
   /** URL del archivo DICOM o imagen médica */
-  imageUrl: string;
+  dicomUrl?: string;
+  /** Legacy prop name used elsewhere */
+  imageUrl?: string;
   /** Tipo de estudio (CT, MRI, etc.) */
   modality?: string;
+  /** Presets de ventana/nivel opcionales */
+  windowPresets?: Array<{
+    name: string;
+    windowWidth: number;
+    windowCenter: number;
+  }>;
 }
 
 /**
@@ -25,6 +33,7 @@ interface DicomViewerProps {
  */
 export const DicomViewer = ({
   dicomUrl,
+  imageUrl,
   modality = "CT",
   windowPresets,
 }: DicomViewerProps) => {
@@ -36,6 +45,9 @@ export const DicomViewer = ({
 
   // Presets por defecto según modalidad
   const defaultPresets = windowPresets || getDefaultPresets(modality);
+
+  // Accept both `dicomUrl` and legacy `imageUrl`
+  const sourceUrl = dicomUrl ?? imageUrl ?? undefined;
 
   const handleZoomIn = () => {
     setZoom((z) => z + 0.2);
@@ -119,7 +131,7 @@ export const DicomViewer = ({
             </Button>
 
             <span className="text-sm text-gray-600 ml-4">
-              Zoom: {Math.round(scale * 100)}%
+              Zoom: {Math.round(zoom * 100)}%
             </span>
           </div>
 
@@ -163,7 +175,7 @@ export const DicomViewer = ({
               value={currentPreset}
               onChange={(e) => handlePresetChange(Number(e.target.value))}
             >
-              {defaultPresets.map((preset, index) => (
+              {defaultPresets.map((preset: { name: string }, index: number) => (
                 <option key={index} value={index}>
                   {preset.name}
                 </option>
@@ -189,14 +201,14 @@ export const DicomViewer = ({
             <div className="text-gray-400 text-center">
               <p className="mb-2">Visor DICOM</p>
               <p className="text-sm text-gray-500">Modalidad: {modality}</p>
-              {dicomUrl && (
+              {sourceUrl && (
                 <a
-                  href={dicomUrl}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-400 hover:text-blue-300 text-xs mt-2 break-all max-w-xs"
                 >
-                  {dicomUrl}
+                  {sourceUrl}
                 </a>
               )}
               <div className="mt-4 text-xs text-gray-500 space-y-1">
