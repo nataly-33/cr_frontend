@@ -205,12 +205,12 @@ export const ReportAIPage = () => {
             </div>
           </div>
 
-          {/* Ejemplos rápidos - Simplificado */}
+          {/* Ejemplos rápidos - 3 TIPOS CRÍTICOS */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-blue-600"
+                  className="w-5 h-5 text-green-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -224,55 +224,143 @@ export const ReportAIPage = () => {
                 </svg>
                 Ejemplos de Consultas
               </h3>
-              <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
-                5 Ejemplos
+              <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded font-semibold">
+                3 Tipos Críticos
               </span>
             </div>
-            <div className="space-y-2">
-              {[
-                {
-                  label: "🩸 Historias clínicas tipo de sangre AB",
-                  query: "Historias clínicas tipo AB ordenadas alfabéticamente",
-                  type: "filtro-avanzado"
-                },
-                {
-                  label: "👨 Pacientes hombres registrados en 2025",
-                  query: "Pacientes hombres creados en 2025",
-                  type: "filtro"
-                },
-                {
-                  label: "👩 Pacientes mujeres de noviembre",
-                  query: "Pacientes mujeres creados en noviembre 2025",
-                  type: "filtro"
-                },
-                {
-                  label: "📋 Historias con nombre del paciente",
-                  query: "Historias clínicas con nombre del paciente ordenadas por paciente",
-                  type: "join"
-                },
-                {
-                  label: "📊 Cantidad de formularios por paciente",
-                  query: "Cantidad de formularios por paciente en noviembre 2025",
-                  type: "agregacion"
-                },
-              ].map((example, idx) => (
-                <button
-                  key={`example-${idx}`}
-                  onClick={() => setQueryText(example.query)}
-                  className="w-full text-left p-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 group"
-                  disabled={loading}
-                >
-                  <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 font-medium">
-                    {example.label}
-                  </span>
-                </button>
-              ))}
+
+            {/* Tipo 1: Historias clínicas por tipo de sangre */}
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Tipo 1: Historias Clínicas por Tipo de Sangre
+              </p>
+              <div className="space-y-2">
+                {[
+                  {
+                    label: "🅰️ Tipo AB (incluye AB+ y AB-)",
+                    query:
+                      "Historias clínicas con tipo de sangre AB ordenadas por paciente ascendente",
+                  },
+                  {
+                    label: "🅾️ Tipo O (incluye O+ y O-)",
+                    query:
+                      "Historias clínicas tipo O ordenadas por paciente descendente",
+                  },
+                  {
+                    label: "🩸 Tipo AB+ específico",
+                    query:
+                      "Historias clínicas con sangre AB+ ordenadas ascendente",
+                  },
+                ].map((example, idx) => (
+                  <button
+                    key={`type1-${idx}`}
+                    onClick={() => setQueryText(example.query)}
+                    className="w-full text-left p-2.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all border border-gray-200 dark:border-gray-700 hover:border-green-400 dark:hover:border-green-600 group"
+                    disabled={loading}
+                  >
+                    <span className="text-xs text-gray-700 dark:text-gray-300 group-hover:text-green-700 dark:group-hover:text-green-400 font-medium">
+                      {example.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Tip único */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-              <p className="text-xs text-blue-800 dark:text-blue-300">
-                💡 <strong>Tip:</strong> Prueba consultas como "Pacientes creados en octubre 2025" o "Historias clínicas ordenadas por paciente"
+            {/* Tipo 2: Historias clínicas por mes */}
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Tipo 2: Historias Clínicas por Mes de Creación
+              </p>
+              <div className="space-y-2">
+                {[
+                  {
+                    label: "🗓️ Noviembre 2025 ascendente",
+                    query:
+                      "Historias clínicas creadas en noviembre 2025 ordenadas por paciente ascendente",
+                  },
+                  {
+                    label: "📆 Octubre 2025 descendente",
+                    query:
+                      "Historias clínicas creadas en octubre 2025 ordenadas descendente",
+                  },
+                  {
+                    label: "📋 Septiembre 2025",
+                    query:
+                      "Historias clínicas de septiembre 2025 ordenadas por paciente",
+                  },
+                ].map((example, idx) => (
+                  <button
+                    key={`type2-${idx}`}
+                    onClick={() => setQueryText(example.query)}
+                    className="w-full text-left p-2.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 group"
+                    disabled={loading}
+                  >
+                    <span className="text-xs text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 font-medium">
+                      {example.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tipo 3: Cantidad de visitas (formularios) por paciente */}
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Tipo 3: Cantidad de Visitas al Hospital (Formularios)
+              </p>
+              <div className="space-y-2">
+                {[
+                  {
+                    label: "📊 Visitas en noviembre 2025",
+                    query:
+                      "Cantidad de veces que cada paciente asistió a la clínica en noviembre 2025",
+                  },
+                  {
+                    label: "🔢 Formularios por paciente octubre",
+                    query:
+                      "Cantidad de formularios por paciente en octubre 2025 ordenados ascendente",
+                  },
+                  {
+                    label: "📈 Visitas todo 2025",
+                    query:
+                      "Cantidad de formularios clínicos por paciente en 2025",
+                  },
+                ].map((example, idx) => (
+                  <button
+                    key={`type3-${idx}`}
+                    onClick={() => setQueryText(example.query)}
+                    className="w-full text-left p-2.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all border border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 group"
+                    disabled={loading}
+                  >
+                    <span className="text-xs text-gray-700 dark:text-gray-300 group-hover:text-purple-700 dark:group-hover:text-purple-400 font-medium">
+                      {example.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tip con explicación */}
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+              <p className="text-xs text-green-800 dark:text-green-300 mb-1">
+                <strong>💡 3 Tipos de Informes Soportados:</strong>
+              </p>
+              <ul className="text-xs text-green-800 dark:text-green-300 space-y-1 ml-4 list-disc">
+                <li>
+                  <strong>Tipo 1:</strong> Filtra historias por tipo de sangre
+                  (AB, O, A, B) con +/-
+                </li>
+                <li>
+                  <strong>Tipo 2:</strong> Filtra historias por mes de creación
+                  (sept, oct, nov, etc.)
+                </li>
+                <li>
+                  <strong>Tipo 3:</strong> Cuenta visitas (formularios clínicos)
+                  por paciente en un período
+                </li>
+              </ul>
+              <p className="text-xs text-green-700 dark:text-green-400 mt-2 font-semibold">
+                ✅ Todos soportan ordenamiento ascendente o descendente
               </p>
             </div>
           </div>
