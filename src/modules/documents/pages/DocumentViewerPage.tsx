@@ -38,7 +38,6 @@ import {
 } from "@shared/components/ui";
 import { useModal } from "@shared/hooks";
 import { showToast, formatDate } from "@shared/utils";
-import { DicomViewer } from "../components/DicomViewer";
 
 // Configurar worker de PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -502,10 +501,9 @@ export const DocumentViewerPage = () => {
                     ) : isMedicalImage && fileUrl ? (
                       // Visor DICOM para imágenes médicas
                       <div className="h-screen">
-                        <DicomViewer
-                          imageUrl={fileUrl}
-                          modality="MRI"
-                        />
+                        <div className="flex items-center justify-center h-full text-gray-500">
+                          <p>El visor DICOM requiere un estudio completo. Por favor, usa el módulo DICOM.</p>
+                        </div>
                       </div>
                     ) : isImage && fileUrl ? (
                       <div className="p-4">

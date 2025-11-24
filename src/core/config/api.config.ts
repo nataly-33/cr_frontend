@@ -164,4 +164,31 @@ export const ENDPOINTS = {
       FEATURE_IMPORTANCE: "/ai/diabetes/tree/feature-importance/",
     },
   },
+  DICOM: {
+    STUDIES: {
+      LIST: "/dicom/studies/",
+      DETAIL: (id: string) => `/dicom/studies/${id}/`,
+      INGEST: "/dicom/studies/ingest/",
+      UPLOAD: "/dicom/studies/upload/",
+      UPLOAD_ZIP: "/dicom/studies/upload-zip/",
+      METADATA: (id: string) => `/dicom/studies/${id}/metadata/`,
+      VIEWER_CONFIG: (id: string) => `/dicom/studies/${id}/viewer-config/`,
+      ACCESS_LOG: (id: string) => `/dicom/studies/${id}/access-log/`,
+    },
+    SERIES: {
+      LIST: "/dicom/series/",
+      DETAIL: (id: string) => `/dicom/series/${id}/`,
+      IMAGE_IDS: (id: string) => `/dicom/series/${id}/image-ids/`,
+      VIEWER_CONFIG: (id: string) => `/dicom/series/${id}/viewer-config/`,
+      PRELOAD_HINTS: (id: string) => `/dicom/series/${id}/preload-hints/`,
+      INSTANCES: (id: string) => `/dicom/series/${id}/instances/`,
+    },
+    INSTANCES: {
+      LIST: "/dicom/instances/",
+      DETAIL: (id: string) => `/dicom/instances/${id}/`,
+      STREAM: (id: string) => `/dicom/instances/${id}/stream/`,
+      METADATA: (id: string) => `/dicom/instances/${id}/metadata/`,
+    },
+    PATIENT_STUDIES: (patientId: string) => `/patients/${patientId}/dicom-studies/`,
+  },
 };

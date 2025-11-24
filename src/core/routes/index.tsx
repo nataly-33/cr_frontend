@@ -68,6 +68,9 @@ import DiabetesPredictionPage from "@modules/ai/pages/DiabetesPredictionPage";
 import DecisionTreePage from "@modules/ai/pages/DecisionTreePage";
 import AIReportsPage from "@modules/ai/pages/AIReportsPage";
 
+// DICOM
+import { DicomStudiesPage, DicomViewerPage, DicomQuickViewPage, DicomAdvancedViewerPage } from "@modules/dicom";
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -224,6 +227,12 @@ export const AppRoutes = () => {
         {/* Billing */}
         <Route path="/billing" element={<BillingPage />} />
         <Route path="/billing/payments" element={<PaymentHistoryPage />} />
+
+        {/* DICOM */}
+        <Route path="/dicom" element={<DicomStudiesPage />} />
+        <Route path="/dicom/quick-view" element={<DicomQuickViewPage />} />
+        <Route path="/dicom/advanced" element={<DicomAdvancedViewerPage />} />
+        <Route path="/dicom/viewer/:studyId" element={<DicomViewerPage />} />
       </Route>
 
       {/* Redirect for unknown routes */}

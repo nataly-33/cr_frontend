@@ -11,6 +11,7 @@ import {
   CreditCard,
   X,
   Brain,
+  FileImage,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -42,6 +43,15 @@ export const Sidebar = ({ mobileOpen = false, onClose }: SidebarProps) => {
       ],
     },
     { icon: FileText, label: t("navigation.documents"), path: "/documents" },
+    {
+      icon: FileImage,
+      label: "Estudios DICOM",
+      path: "/dicom",
+      submenu: [
+        { label: "Visor Rápido", path: "/dicom/quick-view" },
+        { label: "Visor Avanzado", path: "/dicom/advanced" },
+      ],
+    },
     {
       icon: BarChart3,
       label: t("navigation.reports"),

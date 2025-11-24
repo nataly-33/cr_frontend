@@ -12,4 +12,16 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "./src/shared"),
     },
   },
+  worker: {
+    format: "es",
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          cornerstone: ['@cornerstonejs/core', '@cornerstonejs/tools'],
+        },
+      },
+    },
+  },
 });
