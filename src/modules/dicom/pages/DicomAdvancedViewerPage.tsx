@@ -70,10 +70,10 @@ export const DicomAdvancedViewerPage = () => {
 
   // Controles individuales de mejora de imagen
   const [imageFilters, setImageFilters] = useState({
-    contrast: 130,      // 100 = normal, rango 50-200
-    brightness: 110,    // 100 = normal, rango 50-200
-    saturation: 130,    // 100 = normal, rango 0-200
-    sharpness: 50,      // 0-100 (simula nitidez con drop-shadow)
+    contrast: 130, // 100 = normal, rango 50-200
+    brightness: 110, // 100 = normal, rango 50-200
+    saturation: 130, // 100 = normal, rango 0-200
+    sharpness: 50, // 0-100 (simula nitidez con drop-shadow)
   });
 
   // Referencias para interacción del mouse (evita re-renders)
@@ -163,9 +163,10 @@ export const DicomAdvancedViewerPage = () => {
         seriesDescription: firstDataset?.seriesDescription || "",
         totalImages: dicomFiles.length,
       });
-
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al procesar archivos");
+      setError(
+        err instanceof Error ? err.message : "Error al procesar archivos"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +182,6 @@ export const DicomAdvancedViewerPage = () => {
   });
 
   // Aplicar mejoras de calidad al canvas
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const applyHighQualityRendering = useCallback((canvas: HTMLCanvasElement) => {
     // Aumentar resolución del canvas para mejor nitidez (supersampling)
     const dpr = window.devicePixelRatio || 1;
@@ -236,7 +236,10 @@ export const DicomAdvancedViewerPage = () => {
         const image = await cornerstone.loadImage(currentFile.imageId);
 
         // Configurar viewport - mantener transformaciones si existen
-        const defaultViewport = cornerstone.getDefaultViewportForImage(element, image);
+        const defaultViewport = cornerstone.getDefaultViewportForImage(
+          element,
+          image
+        );
         const saved = savedViewportRef.current;
 
         const viewportConfig = {
@@ -261,7 +264,6 @@ export const DicomAdvancedViewerPage = () => {
             center: Math.round(viewport.voi.windowCenter),
           });
         }
-
       } catch (err) {
         console.error("Error loading image:", err);
         setError("Error al cargar la imagen");
@@ -281,9 +283,12 @@ export const DicomAdvancedViewerPage = () => {
     if (!canvas) return;
 
     if (highQuality) {
-      // MODO HD: Aplicar múltiples mejoras con valores personalizados
+      // MODO HD: aplicar supersampling y otras mejoras
+      applyHighQualityRendering(canvas);
+
       const ctx = canvas.getContext("2d");
       if (ctx) {
+        // Se asume que applyHighQualityRendering ya escaló el contexto
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
       }
@@ -295,13 +300,17 @@ export const DicomAdvancedViewerPage = () => {
       const sharpnessVal = imageFilters.sharpness / 100;
 
       // Crear filtro de nitidez simulado con drop-shadow
-      const sharpnessFilter = sharpnessVal > 0
-        ? `drop-shadow(0 0 ${sharpnessVal * 1.5}px rgba(255,255,255,${sharpnessVal * 0.5}))`
-        : '';
+      const sharpnessFilter =
+        sharpnessVal > 0
+          ? `drop-shadow(0 0 ${sharpnessVal * 1.5}px rgba(255,255,255,${
+              sharpnessVal * 0.5
+            }))`
+          : "";
 
       // Aplicar filtros CSS
       canvas.style.imageRendering = "auto";
-      canvas.style.filter = `contrast(${contrastVal}) brightness(${brightnessVal}) saturate(${saturationVal}) ${sharpnessFilter}`.trim();
+      canvas.style.filter =
+        `contrast(${contrastVal}) brightness(${brightnessVal}) saturate(${saturationVal}) ${sharpnessFilter}`.trim();
     } else {
       // MODO SD: Sin mejoras
       const ctx = canvas.getContext("2d");
@@ -311,7 +320,7 @@ export const DicomAdvancedViewerPage = () => {
       canvas.style.imageRendering = "pixelated";
       canvas.style.filter = "none";
     }
-  }, [files.length, highQuality, imageFilters]);
+  }, [files.length, highQuality, imageFilters, applyHighQualityRendering]);
 
   // Reproducción automática
   useEffect(() => {
@@ -367,60 +376,66 @@ export const DicomAdvancedViewerPage = () => {
   }, [files.length]);
 
   // Mouse handlers para herramientas (optimizado sin re-renders)
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!isEnabled) return;
-    // Pausar reproducción al empezar a arrastrar para evitar lag
-    if (isPlaying) {
-      setIsPlaying(false);
-    }
-    isDraggingRef.current = true;
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-  }, [isEnabled, isPlaying]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isEnabled) return;
+      // Pausar reproducción al empezar a arrastrar para evitar lag
+      if (isPlaying) {
+        setIsPlaying(false);
+      }
+      isDraggingRef.current = true;
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    },
+    [isEnabled, isPlaying]
+  );
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDraggingRef.current || !isEnabled || !containerRef.current) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDraggingRef.current || !isEnabled || !containerRef.current) return;
 
-    const deltaX = e.clientX - lastMousePosRef.current.x;
-    const deltaY = e.clientY - lastMousePosRef.current.y;
-    const element = containerRef.current;
+      const deltaX = e.clientX - lastMousePosRef.current.x;
+      const deltaY = e.clientY - lastMousePosRef.current.y;
+      const element = containerRef.current;
 
-    try {
-      const viewport = cornerstone.getViewport(element);
-      if (!viewport) return;
+      try {
+        const viewport = cornerstone.getViewport(element);
+        if (!viewport) return;
 
-      switch (activeTool) {
-        case "Pan": {
-          viewport.translation.x += deltaX;
-          viewport.translation.y += deltaY;
-          // Guardar traslación para mantener entre cambios de imagen
-          savedViewportRef.current.translation = { ...viewport.translation };
-          break;
+        switch (activeTool) {
+          case "Pan": {
+            viewport.translation.x += deltaX;
+            viewport.translation.y += deltaY;
+            // Guardar traslación para mantener entre cambios de imagen
+            savedViewportRef.current.translation = { ...viewport.translation };
+            break;
+          }
+          case "Zoom": {
+            const zoomFactor = 1 + deltaY * 0.01;
+            viewport.scale *= zoomFactor;
+            // Guardar zoom para mantener entre cambios de imagen
+            savedViewportRef.current.scale = viewport.scale;
+            break;
+          }
+          case "WindowLevel": {
+            viewport.voi.windowWidth += deltaX * 2;
+            viewport.voi.windowCenter += deltaY * 2;
+            setWindowLevel({
+              width: Math.round(viewport.voi.windowWidth),
+              center: Math.round(viewport.voi.windowCenter),
+            });
+            break;
+          }
         }
-        case "Zoom": {
-          const zoomFactor = 1 + deltaY * 0.01;
-          viewport.scale *= zoomFactor;
-          // Guardar zoom para mantener entre cambios de imagen
-          savedViewportRef.current.scale = viewport.scale;
-          break;
-        }
-        case "WindowLevel": {
-          viewport.voi.windowWidth += deltaX * 2;
-          viewport.voi.windowCenter += deltaY * 2;
-          setWindowLevel({
-            width: Math.round(viewport.voi.windowWidth),
-            center: Math.round(viewport.voi.windowCenter),
-          });
-          break;
-        }
+
+        cornerstone.setViewport(element, viewport);
+      } catch (err) {
+        console.error("Error updating viewport:", err);
       }
 
-      cornerstone.setViewport(element, viewport);
-    } catch (err) {
-      console.error("Error updating viewport:", err);
-    }
-
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-  }, [isEnabled, activeTool]);
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+    },
+    [isEnabled, activeTool]
+  );
 
   const handleMouseUp = useCallback(() => {
     isDraggingRef.current = false;
@@ -472,7 +487,9 @@ export const DicomAdvancedViewerPage = () => {
     if (isEnabled && containerRef.current) {
       try {
         cornerstone.disable(containerRef.current);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       setIsEnabled(false);
     }
     // Liberar URLs de blobs
@@ -522,7 +539,9 @@ export const DicomAdvancedViewerPage = () => {
               {files.length > 0 ? (
                 <div className="text-green-600">
                   <Layers className="h-8 w-8 mx-auto mb-2" />
-                  <p className="font-medium">{files.length} imágenes cargadas</p>
+                  <p className="font-medium">
+                    {files.length} imágenes cargadas
+                  </p>
                 </div>
               ) : (
                 <div className="text-gray-500">
@@ -534,7 +553,11 @@ export const DicomAdvancedViewerPage = () => {
             </div>
 
             {files.length > 0 && (
-              <Button variant="outline" onClick={handleClear} className="w-full mt-3">
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                className="w-full mt-3"
+              >
                 Limpiar
               </Button>
             )}
@@ -584,7 +607,9 @@ export const DicomAdvancedViewerPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                    onClick={() =>
+                      setCurrentIndex((prev) => Math.max(0, prev - 1))
+                    }
                     title="Anterior"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -595,12 +620,20 @@ export const DicomAdvancedViewerPage = () => {
                     onClick={() => setIsPlaying(!isPlaying)}
                     title={isPlaying ? "Pausar" : "Reproducir"}
                   >
-                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentIndex((prev) => Math.min(files.length - 1, prev + 1))}
+                    onClick={() =>
+                      setCurrentIndex((prev) =>
+                        Math.min(files.length - 1, prev + 1)
+                      )
+                    }
                     title="Siguiente"
                   >
                     <ChevronRight className="h-4 w-4" />
@@ -617,7 +650,9 @@ export const DicomAdvancedViewerPage = () => {
 
                 {/* Velocidad de reproducción */}
                 <div className="text-xs text-gray-500">
-                  <label className="block mb-1">Velocidad: {1000 / playSpeed} fps</label>
+                  <label className="block mb-1">
+                    Velocidad: {1000 / playSpeed} fps
+                  </label>
                   <input
                     type="range"
                     min={50}
@@ -652,14 +687,21 @@ export const DicomAdvancedViewerPage = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">Contraste</span>
-                      <span className="font-mono text-primary-600">{imageFilters.contrast}%</span>
+                      <span className="font-mono text-primary-600">
+                        {imageFilters.contrast}%
+                      </span>
                     </div>
                     <input
                       type="range"
                       min={50}
                       max={200}
                       value={imageFilters.contrast}
-                      onChange={(e) => setImageFilters(prev => ({ ...prev, contrast: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setImageFilters((prev) => ({
+                          ...prev,
+                          contrast: parseInt(e.target.value),
+                        }))
+                      }
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-500"
                     />
                   </div>
@@ -668,14 +710,21 @@ export const DicomAdvancedViewerPage = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">Brillo</span>
-                      <span className="font-mono text-primary-600">{imageFilters.brightness}%</span>
+                      <span className="font-mono text-primary-600">
+                        {imageFilters.brightness}%
+                      </span>
                     </div>
                     <input
                       type="range"
                       min={50}
                       max={200}
                       value={imageFilters.brightness}
-                      onChange={(e) => setImageFilters(prev => ({ ...prev, brightness: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setImageFilters((prev) => ({
+                          ...prev,
+                          brightness: parseInt(e.target.value),
+                        }))
+                      }
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-500"
                     />
                   </div>
@@ -684,14 +733,21 @@ export const DicomAdvancedViewerPage = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">Saturación</span>
-                      <span className="font-mono text-primary-600">{imageFilters.saturation}%</span>
+                      <span className="font-mono text-primary-600">
+                        {imageFilters.saturation}%
+                      </span>
                     </div>
                     <input
                       type="range"
                       min={0}
                       max={200}
                       value={imageFilters.saturation}
-                      onChange={(e) => setImageFilters(prev => ({ ...prev, saturation: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setImageFilters((prev) => ({
+                          ...prev,
+                          saturation: parseInt(e.target.value),
+                        }))
+                      }
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-500"
                     />
                   </div>
@@ -700,14 +756,21 @@ export const DicomAdvancedViewerPage = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">Nitidez</span>
-                      <span className="font-mono text-primary-600">{imageFilters.sharpness}%</span>
+                      <span className="font-mono text-primary-600">
+                        {imageFilters.sharpness}%
+                      </span>
                     </div>
                     <input
                       type="range"
                       min={0}
                       max={100}
                       value={imageFilters.sharpness}
-                      onChange={(e) => setImageFilters(prev => ({ ...prev, sharpness: parseInt(e.target.value) }))}
+                      onChange={(e) =>
+                        setImageFilters((prev) => ({
+                          ...prev,
+                          sharpness: parseInt(e.target.value),
+                        }))
+                      }
                       className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary-500"
                     />
                   </div>
@@ -716,7 +779,14 @@ export const DicomAdvancedViewerPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setImageFilters({ contrast: 130, brightness: 110, saturation: 130, sharpness: 50 })}
+                    onClick={() =>
+                      setImageFilters({
+                        contrast: 130,
+                        brightness: 110,
+                        saturation: 130,
+                        sharpness: 50,
+                      })
+                    }
                     className="w-full mt-2"
                   >
                     Restaurar valores HD
@@ -724,7 +794,8 @@ export const DicomAdvancedViewerPage = () => {
                 </div>
               ) : (
                 <p className="text-xs text-gray-500">
-                  Modo estándar sin mejoras. Activa HD para ajustes personalizados.
+                  Modo estándar sin mejoras. Activa HD para ajustes
+                  personalizados.
                 </p>
               )}
             </Card>
@@ -737,7 +808,9 @@ export const DicomAdvancedViewerPage = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Paciente:</span>
-                  <span className="font-medium truncate ml-2">{seriesInfo.patientName}</span>
+                  <span className="font-medium truncate ml-2">
+                    {seriesInfo.patientName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Modalidad:</span>
@@ -745,7 +818,9 @@ export const DicomAdvancedViewerPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Serie:</span>
-                  <span className="truncate ml-2">{seriesInfo.seriesDescription || "N/A"}</span>
+                  <span className="truncate ml-2">
+                    {seriesInfo.seriesDescription || "N/A"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Imágenes:</span>
@@ -776,10 +851,18 @@ export const DicomAdvancedViewerPage = () => {
           <Card className="p-4">
             <h4 className="font-medium mb-2 text-sm">Controles</h4>
             <ul className="text-xs text-gray-600 space-y-1">
-              <li>• <strong>Scroll:</strong> Navegar entre cortes</li>
-              <li>• <strong>Flechas:</strong> Anterior/Siguiente</li>
-              <li>• <strong>Espacio:</strong> Play/Pausa</li>
-              <li>• <strong>Arrastrar:</strong> Herramienta activa</li>
+              <li>
+                • <strong>Scroll:</strong> Navegar entre cortes
+              </li>
+              <li>
+                • <strong>Flechas:</strong> Anterior/Siguiente
+              </li>
+              <li>
+                • <strong>Espacio:</strong> Play/Pausa
+              </li>
+              <li>
+                • <strong>Arrastrar:</strong> Herramienta activa
+              </li>
             </ul>
           </Card>
         </div>
@@ -817,10 +900,18 @@ export const DicomAdvancedViewerPage = () => {
 
                 <div className="border-l h-6 mx-2" />
 
-                <Button variant="outline" size="sm" onClick={() => handleZoom(1.2)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleZoom(1.2)}
+                >
                   <ZoomIn className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleZoom(0.8)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleZoom(0.8)}
+                >
                   <ZoomOut className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleInvert}>
@@ -840,7 +931,9 @@ export const DicomAdvancedViewerPage = () => {
                   variant={highQuality ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setHighQuality(!highQuality)}
-                  title={highQuality ? "Calidad alta activada" : "Calidad estándar"}
+                  title={
+                    highQuality ? "Calidad alta activada" : "Calidad estándar"
+                  }
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
                   {highQuality ? "HD" : "SD"}
@@ -858,7 +951,9 @@ export const DicomAdvancedViewerPage = () => {
                   <div className="text-center">
                     <Layers className="h-16 w-16 mx-auto mb-4 opacity-50" />
                     <p className="text-lg">Carga una serie de archivos DICOM</p>
-                    <p className="text-sm mt-1">Selecciona múltiples archivos para navegar entre cortes</p>
+                    <p className="text-sm mt-1">
+                      Selecciona múltiples archivos para navegar entre cortes
+                    </p>
                   </div>
                 </div>
               ) : isLoading ? (
@@ -875,7 +970,12 @@ export const DicomAdvancedViewerPage = () => {
                 className="w-full h-full"
                 style={{
                   display: files.length > 0 && !isLoading ? "block" : "none",
-                  cursor: activeTool === "Pan" ? "move" : activeTool === "Zoom" ? "ns-resize" : "crosshair",
+                  cursor:
+                    activeTool === "Pan"
+                      ? "move"
+                      : activeTool === "Zoom"
+                      ? "ns-resize"
+                      : "crosshair",
                 }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
@@ -889,14 +989,19 @@ export const DicomAdvancedViewerPage = () => {
                 <>
                   <div className="absolute top-4 left-4 text-white text-xs space-y-1 bg-black/60 p-2 rounded pointer-events-none">
                     <div>{seriesInfo.patientName}</div>
-                    <div>{seriesInfo.modality} - {seriesInfo.seriesDescription || "Serie"}</div>
+                    <div>
+                      {seriesInfo.modality} -{" "}
+                      {seriesInfo.seriesDescription || "Serie"}
+                    </div>
                   </div>
                   <div className="absolute top-4 right-4 text-white text-sm bg-black/60 px-3 py-1 rounded pointer-events-none">
                     <span className="font-bold">{currentIndex + 1}</span>
                     <span className="text-gray-300"> / {files.length}</span>
                   </div>
                   <div className="absolute bottom-4 right-4 text-white text-xs bg-black/60 p-2 rounded pointer-events-none">
-                    <div>W: {windowLevel.width} / L: {windowLevel.center}</div>
+                    <div>
+                      W: {windowLevel.width} / L: {windowLevel.center}
+                    </div>
                   </div>
                   {isPlaying && (
                     <div className="absolute bottom-4 left-4 text-green-400 text-xs bg-black/60 px-2 py-1 rounded pointer-events-none flex items-center gap-1">
